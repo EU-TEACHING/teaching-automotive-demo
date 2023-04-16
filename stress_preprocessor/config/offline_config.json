@@ -1,0 +1,25 @@
+{
+  "target_col": "Stress",
+  "scenario_col": "ScenarioID",
+  "mode_col": "RepetitionID",
+  "participant_col": "subID",
+  "time_col": "Time",
+  "ecg_col": "ECG",
+  "gsr_col": "GSR",
+  "sampling_rate_hz": 100,
+  "graph_path": "stress_preprocessor/graphs",
+  "modes": {
+    "0": "Eco",
+    "1": "Comfort",
+    "2": "Sport"
+  },
+  "FOD_feats": ["ECG_Raw", "GSR_Raw", "ECG_Clean", "GSR_Clean"],
+  "fix": {
+    "prob_id_missing_zeros": true,
+    "scenario_duration": true,
+    "scenario_length": {
+      "change": true,
+      "strategy": "min"
+    }
+  }
+}
