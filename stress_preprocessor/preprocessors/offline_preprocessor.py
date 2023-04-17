@@ -4,7 +4,7 @@ import pandas as pd
 import time
 from typing import Dict, List
 
-from stress_preprocessor.utils.preprocessing_utils import clean_duplicates, validate_timestamps
+from stress_preprocessor.utils.preprocessing_utils import clean_duplicates, validate_timestamps, compute_diff
 from stress_preprocessor.utils.signal_processing_utils import extract_ecg_features, extract_eda_features, \
     get_sampling_rate
 from stress_preprocessor.utils.visualization_utils import plot_timeseries_raw
@@ -48,7 +48,6 @@ class StressPreprocessorOffline:
             df = df.astype(
                 {self.config.time_col: 'float32', self.config.ecg_col: 'float32', self.config.gsr_col: 'float32',
                  self.config.target_col: 'float32'})
-            df = df.loc[0:3000, :]
 
             dfs_final.append(df)
 
@@ -105,9 +104,10 @@ class StressPreprocessorOffline:
             new_feats_dfs.append(concat_df)
 
         # Compute first-order differences between consecutive values as additional features
-        # TODO: Add code to compute differences
+        new_feats_dfs = compute_diff(new_feats_dfs, self.config.fod_feats)
 
-        new_feats_df = pd.concat()
+        # # Concatenate all
+        # new_feats_df = pd.concat()
         stop = time.time()
         logging.info(f"Feature extraction: {stop - start}")
         return ecg_feats_dfs

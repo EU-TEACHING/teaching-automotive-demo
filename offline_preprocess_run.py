@@ -10,17 +10,7 @@ def main(subj_id, save_path):
     config = Config('stress_preprocessor/config/offline_config.json')
 
     subject_path = f"stress_preprocessor/automotive_study_2/SUBJ_{subj_id}_DATA"
-    subpaths = {
-        "s1_eco": "Scenario_01.Case_set_1.Scenario01_Eco/results/icos/SUBJ_01_MOCK_01.csv",
-        "s1_sport": "Scenario_01.Case_set_1.Scenario01_Sport/results/icos/SUBJ_01_MOCK_01.csv",
-        "s1_comfort": "Scenario_01.Case_set_1.Scenario01_Comfort/results/icos/SUBJ_01_MOCK_01.csv",
-        "s2_eco": "Scenario_02.Case_set_1.Scenario01_Eco/results/icos/SUBJ_01_MOCK_01.csv",
-        "s2_sport": "Scenario_02.Case_set_1.Scenario01_Sport/results/icos/SUBJ_01_MOCK_01.csv",
-        "s2_comfort": "Scenario_02.Case_set_1.Scenario01_Comfort/results/icos/SUBJ_01_MOCK_01.csv",
-        "s3_eco": "Scenario_03.Case_set_1.Scenario01_Eco/results/icos/SUBJ_01_MOCK_01.csv",
-        "s3_sport": "Scenario_03.Case_set_1.Scenario01_Sport/results/icos/SUBJ_01_MOCK_01.csv",
-        "s3_comfort": "Scenario_03.Case_set_1.Scenario01_Comfort/results/icos/SUBJ_01_MOCK_01.csv"
-    }
+    subpaths = config.subpaths
 
     preprocessor = StressPreprocessorOffline(config)
     preprocessor.run(subpaths, subject_path, subj_id, save_path)

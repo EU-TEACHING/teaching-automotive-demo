@@ -91,6 +91,31 @@ def prefix_columns(df: pd.DataFrame, prefix: str) -> pd.DataFrame:
     return df.rename(columns=dict(zip(df.columns, new_cols)))
 
 
+def compute_diff(dataframes: List[pd.DataFrame], columns: List[str]) -> List[pd.DataFrame]:
+    """
+    Computes the first order differences for the specified columns in a list of dataframes and
+    adds them as new columns in the dataframes.
+
+    Args:
+        dataframes: A list of pandas dataframes to compute the differences for.
+        columns: A list of column names to compute the differences for.
+
+    Returns:
+        A list of pandas dataframes, each with the new columns representing the first order differences.
+    """
+
+    diff_dfs = []
+
+    for df in dataframes:
+        for col in columns:
+            col_diff = col + '_diff'
+            df[col_diff] = df[col].diff()
+            df.at[0, col_diff] = 0  # Replace NaN with 0 for the first element
+        diff_dfs.append(df)
+
+    return diff_dfs
+
+
 def resample_dataframe(df: pd.DataFrame, timestamp_col: str, value_col: str, group_col: str, participant_col: str,
                        target_freq: str) -> pd.DataFrame:
     """Resample a time series DataFrame to a specified frequency.
