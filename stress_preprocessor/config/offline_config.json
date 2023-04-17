@@ -1,4 +1,15 @@
 {
+  "subpaths": {
+    "s1_eco": "Scenario_01.Case_set_1.Scenario01_Eco/results/icos/SUBJ_01_MOCK_01.csv",
+    "s1_sport": "Scenario_01.Case_set_1.Scenario01_Sport/results/icos/SUBJ_01_MOCK_01.csv",
+    "s1_comfort": "Scenario_01.Case_set_1.Scenario01_Comfort/results/icos/SUBJ_01_MOCK_01.csv",
+    "s2_eco": "Scenario_02.Case_set_1.Scenario01_Eco/results/icos/SUBJ_01_MOCK_01.csv",
+    "s2_sport": "Scenario_02.Case_set_1.Scenario01_Sport/results/icos/SUBJ_01_MOCK_01.csv",
+    "s2_comfort": "Scenario_02.Case_set_1.Scenario01_Comfort/results/icos/SUBJ_01_MOCK_01.csv",
+    "s3_eco": "Scenario_03.Case_set_1.Scenario01_Eco/results/icos/SUBJ_01_MOCK_01.csv",
+    "s3_sport": "Scenario_03.Case_set_1.Scenario01_Sport/results/icos/SUBJ_01_MOCK_01.csv",
+    "s3_comfort": "Scenario_03.Case_set_1.Scenario01_Comfort/results/icos/SUBJ_01_MOCK_01.csv"
+  },
   "target_col": "Stress",
   "scenario_col": "ScenarioID",
   "mode_col": "RepetitionID",
@@ -13,7 +24,12 @@
     "1": "Comfort",
     "2": "Sport"
   },
-  "FOD_feats": ["ECG_Raw", "GSR_Raw", "ECG_Clean", "GSR_Clean"],
+  "fod_feats": [
+    "ECG_Raw",
+    "EDA_Raw",
+    "ECG_Clean",
+    "EDA_Clean"
+  ],
   "fix": {
     "prob_id_missing_zeros": true,
     "scenario_duration": true,
