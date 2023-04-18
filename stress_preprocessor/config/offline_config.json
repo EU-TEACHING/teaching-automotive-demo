@@ -17,6 +17,7 @@
   "time_col": "Time",
   "ecg_col": "ECG",
   "gsr_col": "GSR",
+  "error_col": "ErrorCount",
   "sampling_rate_hz": 100,
   "modes": {
     "0": "Eco",
