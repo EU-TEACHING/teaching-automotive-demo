@@ -6,7 +6,6 @@ import warnings
 import matplotlib.pyplot as plt
 import neurokit2 as nk
 import pandas as pd
-from scipy.signal import savgol_filter
 
 from stress_preprocessor.utils.preprocessing_utils import prefix_columns
 
@@ -56,7 +55,11 @@ def extract_neuro_features(dfs: Union[pd.DataFrame, List[pd.DataFrame]], sr_hz_l
         else:
             raise ValueError("Invalid value for signal_type. Must be 'ECG' or 'EDA'.")
 
-        # Plot neuro features
+        # Save neuro features plots
+        subj_dir = os.path.join(graph_path, f"SUBJ_{participant}")
+        if not os.path.exists(subj_dir):
+            os.makedirs(subj_dir)
+
         fig = plt.gcf()
         # Create the filename and the full save path to save the plot
         filename = f"{signal_type}_FEATS_SUBJ_{participant}_SCEN_{scenario_id}_MODE_{mode}.png"
@@ -67,7 +70,9 @@ def extract_neuro_features(dfs: Union[pd.DataFrame, List[pd.DataFrame]], sr_hz_l
         neuro_processed = prefix_columns(neuro_processed, f'{signal_type}_')
 
         # Add the rest of the features
-        neuro_processed = pd.concat([df.loc[:, [time_col, scenario_col, mode_col, target_col]], neuro_processed],
+        df_raw_part = df.loc[:, [time_col, scenario_col, mode_col, target_col]]
+
+        neuro_processed = pd.concat([df_raw_part, neuro_processed],
                                     axis=1)
 
         neuro_feats_dfs.append(neuro_processed)
@@ -104,27 +109,3 @@ def get_sampling_rate(dfs: List[pd.DataFrame], time_col: str) -> List[float]:
     return sampling_rates
 
 
-def remove_baseline(df: pd.DataFrame) -> pd.DataFrame:
-    """Remove the baseline signal from the ECG data using a Savitzky-Golay filter.
-
-    Args:
-        df: Pandas DataFrame with columns "ts_corr" (timestamp), "data" (ECG measurement),
-            "prob_id" (participant id), and "scenario" (scenario category).
-
-    Returns:
-        Pandas DataFrame with baseline-corrected ECG data.
-    """
-    # Group the data by participant id and scenario category
-    grouped = df.groupby(['prob_id', 'scenario'])
-
-    # Loop through each group and remove the baseline signal
-    for name, group in grouped:
-        ecg_data = group['data'].values
-
-        # Apply a Savitzky-Golay filter to the ECG data to remove the baseline signal
-        ecg_data = ecg_data - savgol_filter(ecg_data, 201, 3)
-
-        # Replace the original ECG data with the baseline-corrected data
-        df.loc[group.index, 'data'] = ecg_data
-
-    return df

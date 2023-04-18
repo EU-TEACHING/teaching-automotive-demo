@@ -116,7 +116,12 @@ class StressPreprocessorOffline:
 
         new_feats_dfs = []
         for ecg_feats_df, eda_feats_df in zip(ecg_feats_dfs, eda_feats_dfs):
+            # Concatenate ECG and EDA features
             concat_df = pd.concat([ecg_feats_df, eda_feats_df], axis=1)
+
+            # Remove duplicated columns since both ECG and EDA dfs contained some of the initial feats, e.g., ScenarioID
+            concat_df = concat_df.loc[:, ~concat_df.columns.duplicated()]
+
             new_feats_dfs.append(concat_df)
 
         # Compute first-order differences between consecutive values as additional features
@@ -145,7 +150,7 @@ class StressPreprocessorOffline:
         filename = None
 
         if self.config.save_single_df:
-            final_df = pd.concat(dfs, axis=1)
+            final_df = pd.concat(dfs)
             filename = f"SUBJ_{subj_id}_ALL_SCENARIOS.csv"
             final_df.to_csv(os.path.join(subj_dir, filename), index=False)
         else:
