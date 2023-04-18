@@ -18,7 +18,6 @@
   "ecg_col": "ECG",
   "gsr_col": "GSR",
   "sampling_rate_hz": 100,
-  "graph_path": "stress_preprocessor/graphs",
   "modes": {
     "0": "Eco",
     "1": "Comfort",
@@ -30,12 +29,7 @@
     "ECG_Clean",
     "EDA_Clean"
   ],
-  "fix": {
-    "prob_id_missing_zeros": true,
-    "scenario_duration": true,
-    "scenario_length": {
-      "change": true,
-      "strategy": "min"
-    }
-  }
+  "graph_path": "stress_preprocessor/graphs",
+  "processed_data_path": "stress_preprocessor/data/processed",
+  "save_single_df": true
 }

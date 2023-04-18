@@ -1,22 +1,26 @@
 import argparse
 import logging
 import sys
+import time
 
 from stress_preprocessor.config import Config
 from stress_preprocessor.preprocessors.offline_preprocessor import StressPreprocessorOffline
 
 
-def main(subj_id, save_path):
+def main(subj_id):
     config = Config('stress_preprocessor/config/offline_config.json')
 
-    subject_path = f"stress_preprocessor/automotive_study_2/SUBJ_{subj_id}_DATA"
+    subject_path = f"stress_preprocessor/data/automotive_study_2/SUBJ_{subj_id}_DATA"
     subpaths = config.subpaths
 
     preprocessor = StressPreprocessorOffline(config)
-    preprocessor.run(subpaths, subject_path, subj_id, save_path)
+    preprocessor.run(subpaths, subject_path, subj_id)
 
 
 if __name__ == '__main__':
+
+    start = time.time()
+
     logging.root.handlers = []
     logging.basicConfig(format="%(asctime)s: %(levelname)s: %(message)s", level=logging.INFO,
                         datefmt="%Y-%m-%d %H:%M:%S", handlers=[logging.FileHandler("logs.log"),
@@ -27,11 +31,10 @@ if __name__ == '__main__':
                         required=True,
                         type=str,
                         help="The participant's ID.")
-    parser.add_argument('-sp', '--save_path',
-                        required=False,
-                        type=str,
-                        help="The path to save the processed dataframes.")
 
     args = parser.parse_args()
 
-    main(args.subj_id, args.save_path)
+    main(args.subj_id)
+
+    stop = time.time()
+    logging.info(f"Overall latency (secs): {stop - start}")

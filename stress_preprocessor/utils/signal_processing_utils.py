@@ -1,6 +1,7 @@
-import datetime
+import logging
 import os
-from typing import List, Dict
+from typing import List, Dict, Union
+import warnings
 
 import matplotlib.pyplot as plt
 import neurokit2 as nk
@@ -9,94 +10,73 @@ from scipy.signal import savgol_filter
 
 from stress_preprocessor.utils.preprocessing_utils import prefix_columns
 
-# TODO: Check if input is not list and added to a list for single dataframes input to be used for inference
 
-def extract_ecg_features(dfs: List[pd.DataFrame], sr_hz_list: List[float], ecg_col: str, participant: str,
-                         scenario_col: str, mode_col: str, modes: Dict[str, str], graph_path: str) -> List[
-    pd.DataFrame]:
+def extract_neuro_features(dfs: Union[pd.DataFrame, List[pd.DataFrame]], sr_hz_list: List[float], signal_col: str,
+                           target_col: str, time_col: str, participant: str, scenario_col: str, mode_col: str,
+                           modes: Dict[str, str], graph_path: str, signal_type: str) -> List[pd.DataFrame]:
     """
-    Extracts ECG features from a list of dataframes.
+    Extracts ECG or EDA features from a list of dataframes.
 
     Args:
         dfs: A list of pandas dataframes containing ECG data.
         sr_hz_list: A list of sampling rates, in Hz, corresponding to the dataframes in `dfs`.
-        ecg_col: The name of the ECG column in each dataframe.
+        signal_col: The name of the ECG or EDA/GSR column in each dataframe.
+        target_col: The name of the prediction target column, e.g., stress.
+        time_col: The timestamp column
         participant: The participant identifier string.
         scenario_col: The name of the scenario column in each dataframe.
-        mode_col: The name of the mode column in each dataframe.
-        modes: A dictionary mapping mode codes to mode names.
+        mode_col: The name of the scenario mode column in each dataframe.
+        modes: A dictionary mapping mode codes to mode names, e.g., eco, sport.
         graph_path: The path to save the ECG feature plots.
+        signal_type: "ECG" or "EDA"
 
     Returns:
         A list of pandas dataframes containing the extracted ECG features.
     """
-    ecg_feats_dfs = []
+    if not isinstance(dfs, list):
+        # If the input is not a list, convert it to a list with a single element
+        dfs = [dfs]
+
+    neuro_feats_dfs = []
     for idx, df in enumerate(dfs):
         scenario_id = df[scenario_col].iloc[0]
         mode = modes[df[mode_col].iloc[0]]
-        ecg_signal = df[ecg_col]
-        # Compute ECG features using NeuroKit2
-        ecg_processed, info = nk.ecg_process(ecg_signal, sampling_rate=int(sr_hz_list[idx]))
+        signal = df[signal_col]
 
-        # Plot features
-        nk.ecg_plot(ecg_processed, info, int(sr_hz_list[idx]))
+        if signal_type == 'ECG':
+            # Compute ECG features using NeuroKit2
+            with warnings.catch_warnings(record=True) as caught_warnings:
+                neuro_processed, info = nk.ecg_process(signal, sampling_rate=int(sr_hz_list[idx]))
+                nk.ecg_plot(neuro_processed, info, int(sr_hz_list[idx]))
+        elif signal_type == "EDA":
+            # Compute EDA features using NeuroKit2
+            with warnings.catch_warnings(record=True) as caught_warnings:
+                neuro_processed, info = nk.eda_process(signal, sampling_rate=int(sr_hz_list[idx]))
+                nk.eda_plot(neuro_processed, int(sr_hz_list[idx]))
+        else:
+            raise ValueError("Invalid value for signal_type. Must be 'ECG' or 'EDA'.")
+
+        # Plot neuro features
         fig = plt.gcf()
         # Create the filename and the full save path to save the plot
-        filename = f"ECG_FEATS_SUBJ_{participant}_SCEN_{scenario_id}_MODE_{mode}.png"
+        filename = f"{signal_type}_FEATS_SUBJ_{participant}_SCEN_{scenario_id}_MODE_{mode}.png"
         full_path = os.path.join(graph_path, filename)
         fig.savefig(full_path, dpi=300, bbox_inches='tight')
 
         # Add prefixes to column names, to differentiate between ECG and EDA feats
-        ecg_processed = prefix_columns(ecg_processed, 'ECG_')
+        neuro_processed = prefix_columns(neuro_processed, f'{signal_type}_')
 
-        ecg_feats_dfs.append(ecg_processed)
+        # Add the rest of the features
+        neuro_processed = pd.concat([df.loc[:, [time_col, scenario_col, mode_col, target_col]], neuro_processed],
+                                    axis=1)
 
-        # TODO: merge ECG/EDA functions into a single function with dynamic arg for dignal_type
+        neuro_feats_dfs.append(neuro_processed)
 
-    return ecg_feats_dfs
+        # Log any warnings that were caught
+        for warning in caught_warnings:
+            logging.warning(str(warning.message))
 
-
-def extract_eda_features(dfs: List[pd.DataFrame], sr_hz_list: List[float], eda_col: str, participant: str,
-                         scenario_col: str, mode_col: str, modes: Dict[str, str], graph_path: str) -> List[
-    pd.DataFrame]:
-    """
-    Extracts EDA features from a list of dataframes.
-
-    Args:
-        dfs: A list of pandas dataframes containing EDA data.
-        sr_hz_list: A list of sampling rates, in Hz, corresponding to the dataframes in `dfs`.
-        eda_col: The name of the EDA column in each dataframe.
-        participant: The participant identifier string.
-        scenario_col: The name of the scenario column in each dataframe.
-        mode_col: The name of the mode column in each dataframe.
-        modes: A dictionary mapping mode codes to mode names.
-        graph_path: The path to save the EDA feature plots.
-
-    Returns:
-        A list of pandas dataframes containing the extracted EDA features.
-    """
-    eda_feats_dfs = []
-    for idx, df in enumerate(dfs):
-        scenario_id = df[scenario_col].iloc[0]
-        mode = modes[df[mode_col].iloc[0]]
-        eda_signal = df[eda_col]
-        # Compute EDA features using NeuroKit2
-        eda_processed, info = nk.eda_process(eda_signal, sampling_rate=int(sr_hz_list[idx]))
-
-        # Plot features
-        nk.eda_plot(eda_processed, sampling_rate=int(sr_hz_list[idx]))
-        fig = plt.gcf()
-        # Create the filename and the full save path to save the plot
-        filename = f"EDA_FEATS_SUBJ_{participant}_SCEN_{scenario_id}_MODE_{mode}.png"
-        full_path = os.path.join(graph_path, filename)
-        fig.savefig(full_path, dpi=300, bbox_inches='tight')
-
-        # Add prefixes to column names, to differentiate between ECG and EDA feats
-        eda_processed = prefix_columns(eda_processed, 'EDA_')
-
-        eda_feats_dfs.append(eda_processed)
-
-    return eda_feats_dfs
+    return neuro_feats_dfs
 
 
 def get_sampling_rate(dfs: List[pd.DataFrame], time_col: str) -> List[float]:
