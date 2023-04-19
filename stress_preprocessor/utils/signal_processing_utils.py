@@ -12,7 +12,7 @@ from stress_preprocessor.utils.preprocessing_utils import prefix_columns
 
 def extract_neuro_features(dfs: Union[pd.DataFrame, List[pd.DataFrame]], sr_hz_list: List[float], signal_col: str,
                            target_col: str, time_col: str, participant: str, scenario_col: str, mode_col: str,
-                           modes: Dict[str, str], graph_path: str, signal_type: str) -> List[pd.DataFrame]:
+                           modes: Dict[str, str], graph_path: str, signal_type: str, offline) -> List[pd.DataFrame]:
     """
     Extracts ECG or EDA features from a list of dataframes.
 
@@ -55,16 +55,17 @@ def extract_neuro_features(dfs: Union[pd.DataFrame, List[pd.DataFrame]], sr_hz_l
         else:
             raise ValueError("Invalid value for signal_type. Must be 'ECG' or 'EDA'.")
 
-        # Save neuro features plots
-        subj_dir = os.path.join(graph_path, f"SUBJ_{participant}")
-        if not os.path.exists(subj_dir):
-            os.makedirs(subj_dir)
+        if offline:
+            # Save neuro features plots
+            subj_dir = os.path.join(graph_path, f"SUBJ_{participant}")
+            if not os.path.exists(subj_dir):
+                os.makedirs(subj_dir)
 
-        fig = plt.gcf()
-        # Create the filename and the full save path to save the plot
-        filename = f"{signal_type}_FEATS_SUBJ_{participant}_SCEN_{scenario_id}_MODE_{mode}.png"
-        full_path = os.path.join(graph_path, filename)
-        fig.savefig(full_path, dpi=300, bbox_inches='tight')
+            fig = plt.gcf()
+            # Create the filename and the full save path to save the plot
+            filename = f"{signal_type}_FEATS_SUBJ_{participant}_SCEN_{scenario_id}_MODE_{mode}.png"
+            full_path = os.path.join(graph_path, filename)
+            fig.savefig(full_path, dpi=300, bbox_inches='tight')
 
         # Add prefixes to column names, to differentiate between ECG and EDA feats
         neuro_processed = prefix_columns(neuro_processed, f'{signal_type}_')

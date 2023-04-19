@@ -32,5 +32,8 @@
   ],
   "graph_path": "stress_preprocessor/graphs",
   "processed_data_path": "stress_preprocessor/data/processed",
-  "save_single_df": true
+  "save_single_df": true,
+  "online": {
+    "array_schema": ["Time", "RepetitionID", "ScenarioID", "subID", "ECG", "GSR", "ErrorCount", "Stress"]
+  }
 }

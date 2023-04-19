@@ -4,16 +4,16 @@ import sys
 import time
 
 from stress_preprocessor.config import Config
-from stress_preprocessor.preprocessors.offline_preprocessor import StressPreprocessorOffline
+from stress_preprocessor.preprocessors.preprocessor import StressPreprocessor
 
 
 def main(subj_id):
-    config = Config('stress_preprocessor/config/offline_config.json')
+    config = Config('stress_preprocessor/config/config.json')
 
     subject_path = f"stress_preprocessor/data/automotive_study_2/SUBJ_{subj_id}_DATA"
     subpaths = config.subpaths
 
-    preprocessor = StressPreprocessorOffline(config)
+    preprocessor = StressPreprocessor(config)
     preprocessor.run(subpaths, subject_path, subj_id)
 
 
