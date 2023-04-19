@@ -28,6 +28,7 @@ def extract_neuro_features(dfs: Union[pd.DataFrame, List[pd.DataFrame]], sr_hz_l
         modes: A dictionary mapping mode codes to mode names, e.g., eco, sport.
         graph_path: The path to save the ECG feature plots.
         signal_type: "ECG" or "EDA"
+        offline: True enables Neurokit plots for offline training. False during online inference
 
     Returns:
         A list of pandas dataframes containing the extracted ECG features.
@@ -46,12 +47,14 @@ def extract_neuro_features(dfs: Union[pd.DataFrame, List[pd.DataFrame]], sr_hz_l
             # Compute ECG features using NeuroKit2
             with warnings.catch_warnings(record=True) as caught_warnings:
                 neuro_processed, info = nk.ecg_process(signal, sampling_rate=int(sr_hz_list[idx]))
-                nk.ecg_plot(neuro_processed, info, int(sr_hz_list[idx]))
+                if offline:
+                    nk.ecg_plot(neuro_processed, info, int(sr_hz_list[idx]))
         elif signal_type == "EDA":
             # Compute EDA features using NeuroKit2
             with warnings.catch_warnings(record=True) as caught_warnings:
                 neuro_processed, info = nk.eda_process(signal, sampling_rate=int(sr_hz_list[idx]))
-                nk.eda_plot(neuro_processed, int(sr_hz_list[idx]))
+                if offline:
+                    nk.eda_plot(neuro_processed, int(sr_hz_list[idx]))
         else:
             raise ValueError("Invalid value for signal_type. Must be 'ECG' or 'EDA'.")
 

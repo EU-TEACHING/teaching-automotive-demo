@@ -5,7 +5,8 @@ import time
 from typing import Dict, List
 import warnings
 
-from stress_preprocessor.utils.preprocessing_utils import clean_duplicates, validate_timestamps, compute_diff
+from stress_preprocessor.utils.preprocessing_utils import clean_duplicates, validate_timestamps, compute_diff, \
+    impute_null
 from stress_preprocessor.utils.signal_processing_utils import extract_neuro_features, get_sampling_rate
 from stress_preprocessor.utils.visualization_utils import plot_timeseries_raw
 
@@ -18,7 +19,7 @@ class StressPreprocessor:
 
     def load_data(self, subpaths: Dict[str, str], subj_path: str) -> List[pd.DataFrame]:
         """
-        Load data from a subject's directory into a list of pandas DataFrames.
+        Offline Load data from a subject's directory into a list of pandas DataFrames.
 
         Args:
             subpaths: A dictionary of file names for each scenario/mode dataset.
@@ -48,10 +49,11 @@ class StressPreprocessor:
                 df = pd.read_csv(filepath, header=1, sep=';')
                 df = df.drop(0)
                 df = df.astype({self.config.time_col: 'float32', self.config.ecg_col: 'float32',
-                                self.config.gsr_col: 'float32', self.config.target_col: 'float32'})
+                                self.config.gsr_col: 'float32', self.config.target_col: 'float32',
+                                self.config.error_col: 'float32'})
                 df.reset_index(inplace=True, drop=True)
                 dfs.append(df)
-                logging.info(f"Successfully loaded {filepath}.")
+                logging.info(f"Successfully loaded {filepath}")
 
             except Exception as e:
                 logging.error(f"Error loading file: {filepath}\n{str(e)}")
@@ -65,8 +67,8 @@ class StressPreprocessor:
     def load_data_online(self, array):
         # Array to df
         df = pd.DataFrame(array, columns=self.config.online.array_schema)
-        df = df.astype({self.config.time_col: 'float32', self.config.ecg_col: 'float32',
-                        self.config.gsr_col: 'float32', self.config.target_col: 'float32'})
+        df = df.astype({self.config.time_col: 'float32', self.config.ecg_col: 'float32', self.config.gsr_col: 'float32',
+                        self.config.target_col: 'float32', self.config.error_col: 'float32'})
         return [df]
 
     def clean_and_validate(self, dfs: List[pd.DataFrame]) -> List[pd.DataFrame]:
@@ -85,12 +87,16 @@ class StressPreprocessor:
         # Validate the remaining timestamps to ensure that they are uniformly spaced.
         val_dfs = validate_timestamps(no_dup_dfs, self.config.time_col, self.config.sampling_rate_hz)
 
-        # Impute missing values in the preprocessed dataframes.
-        # TODO: Add imputation logic here. Update: NeuroKitWarning: There are 1 missing data points in your signal. Filling missing values by using the forward filling method.
+        # Impute missing values: bfill and ffil for categorical, interpolation for numerical (neurokit default is ffill)
+        # Before imputation, null values are added in error marked rows
+        imputed_dfs = impute_null(val_dfs, self.config.error_col, self.config.ecg_col, self.config.gsr_col,
+                                  self.config.target_col, self.config.scenario_col, self.config.mode_col,
+                                  self.config.participant_col)
+
         stop = time.time()
         logging.info(f"Data cleaning and timestamp validation latency (secs): {stop - start}")
 
-        return val_dfs
+        return imputed_dfs
 
     def visualize(self):
         pass
@@ -101,6 +107,7 @@ class StressPreprocessor:
 
         Args:
             dfs: A list of pandas dataframes containing physiological signals.
+            offline: True enables Neurokit plotting functions
 
         Returns:
             A list of pandas dataframes containing extracted and original features.
@@ -171,7 +178,7 @@ class StressPreprocessor:
 
     def run(self, subpaths: Dict[str, str], subject_path: str, subj_id: str) -> None:
         """
-        Preprocessing pipeline: data loading, cleaning and validation, feature extraction, store preprocessed.
+        Offline Preprocessing pipeline: data loading, cleaning and validation, feature extraction, store preprocessed.
 
         Args:
             subpaths: A dictionary of file names for each scenario/mode dataset.
@@ -190,6 +197,6 @@ class StressPreprocessor:
     def online_run(self, array):
         dfs = self.load_data_online(array)
         prep_dfs = self.clean_and_validate(dfs)
-        new_feats_dfs = self.extract_features(prep_dfs, offline=False)
+        new_feats_dfs = self.extract_features(prep_dfs, offline=False)  # Using offline=False to indicate this is online
 
         return new_feats_dfs
