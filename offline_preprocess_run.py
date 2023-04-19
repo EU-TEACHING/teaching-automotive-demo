@@ -10,6 +10,7 @@ from stress_preprocessor.preprocessors.preprocessor import StressPreprocessor
 def main(subj_id):
     config = Config('stress_preprocessor/config/config.json')
 
+    # TODO: Check real subject path
     subject_path = f"stress_preprocessor/data/automotive_study_2/SUBJ_{subj_id}_DATA"
     subpaths = config.subpaths
 

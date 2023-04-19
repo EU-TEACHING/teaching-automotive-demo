@@ -55,7 +55,9 @@ def validate_timestamps(dfs: List[pd.DataFrame], time_col: str, sampling_rate: f
             # Missing timestamps found; fill them in with NaN values
 
             # Create the complete timestamps as a range (start, stop, step)
-            complete_time = pd.Series(np.arange(float(df[time_col].min()), float(df[time_col].max()) + expected_time_diff, expected_time_diff))
+            complete_time = pd.Series(
+                np.arange(float(df[time_col].min()), float(df[time_col].max()) + expected_time_diff,
+                          expected_time_diff))
             complete_df = pd.DataFrame({time_col: complete_time})
             # Use Decimal to avoid rounding errors in the merging key column
             complete_df[time_col] = complete_df[time_col].apply(round_decimal)
@@ -69,6 +71,66 @@ def validate_timestamps(dfs: List[pd.DataFrame], time_col: str, sampling_rate: f
         validated_dfs.append(df)
 
     return validated_dfs
+
+
+def errors_to_null(dfs: List[pd.DataFrame], error_col: str, ecg_col: str, gsr_col: str) -> List[pd.DataFrame]:
+    """
+    This function takes a list of pandas dataframes and nulls out the values in the ecg and gsr columns if the value in
+    the error column is not equal to 0.
+
+    Args:
+        dfs: A list of pandas dataframes
+        error_col: The name of the error column
+        ecg_col: The name of the ecg column
+        gsr_col: The name of the gsr column
+
+    Returns:
+        A list of pandas dataframes with the ecg and gsr columns nulled out if the value in the
+        error column is not equal to 0.
+    """
+    nulled_errors_dfs = []
+    for df in dfs:
+        df.loc[df[error_col] != 0, [ecg_col, gsr_col]] = None
+        nulled_errors_dfs.append(df)
+    return nulled_errors_dfs
+
+
+def impute_null(dfs: List[pd.DataFrame], error_col: str, ecg_col: str, gsr_col: str, target_col: str, scenario_col: str,
+                mode_col: str, participant_col: str) -> List[pd.DataFrame]:
+    """
+    This function takes a list of pandas dataframes and imputes null values in the ecg_col and gsr_col using interpolation,
+    and imputes null values in the scenario_col, mode_col, and participant_col using forward and backward fill. It first
+    nulls out the values in the ecg_col and gsr_col for rows marked as error (i.e., the error column is not equal to 0).
+
+    Args:
+        dfs: A list of pandas dataframes
+        error_col: The name of the error column
+        ecg_col: The name of the ecg column
+        gsr_col: The name of the gsr column
+        scenario_col: The name of the scenario column
+        mode_col: The name of the mode column
+        participant_col: The name of the participant column
+
+    Returns:
+        A list of pandas dataframes with null values in ecg_col and gsr_col imputed using interpolation,
+        and null values in scenario_col, mode_col, and participant_col imputed using forward and backward fill.
+    """
+    # Null out ECG/GSR values for rows marked as error (i.e., the error column is !=0)
+    nulled_errors_dfs = errors_to_null(dfs, error_col, ecg_col, gsr_col)
+    imputed_dfs = []
+    for df in nulled_errors_dfs:
+        # Impute null values in ecg_col and gsr_col with interpolation
+        df[ecg_col] = df[ecg_col].interpolate()
+        df[gsr_col] = df[gsr_col].interpolate()
+        df[target_col] = df[target_col].interpolate()
+
+        # Impute null values in scenario_col, mode_col, and participant_col with forward and backward fill
+        df[scenario_col] = df[scenario_col].fillna(method='ffill').fillna(method='bfill')
+        df[mode_col] = df[mode_col].fillna(method='ffill').fillna(method='bfill')
+        df[participant_col] = df[participant_col].fillna(method='ffill').fillna(method='bfill')
+
+        imputed_dfs.append(df)
+    return imputed_dfs
 
 
 def prefix_columns(df: pd.DataFrame, prefix: str) -> pd.DataFrame:
