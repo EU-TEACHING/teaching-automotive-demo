@@ -8,7 +8,7 @@ Data preprocessing classes for offline and online pipelines
 
 ### Run the offline preprocessor
 
-First make sure `stress_preprocessor/config/offline_config.json` is up to date with the latest data schema information.    
+First make sure `stress_preprocessor/config/config.json` is up to date with the latest data schema information.    
 Run the offline preprocessor: 
 
 ```
