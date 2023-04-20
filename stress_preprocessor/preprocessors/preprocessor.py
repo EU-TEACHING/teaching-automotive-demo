@@ -98,8 +98,14 @@ class StressPreprocessor:
 
         return imputed_dfs
 
-    def visualize(self):
-        pass
+    def visualize(self, dfs: List[pd.DataFrame]):
+        # Plot ECG raw
+        plot_timeseries_raw(dfs, self.config.ecg_col, self.config.time_col, self.config.scenario_col,
+                            self.config.mode_col, self.config.modes, self.subj_id, self.config.graph_path, "ECG")
+        # Plot GSR raw
+        plot_timeseries_raw(dfs, self.config.gsr_col, self.config.time_col, self.config.scenario_col,
+                            self.config.mode_col, self.config.modes, self.subj_id, self.config.graph_path, "GSR")
+
 
     def extract_features(self, dfs: List[pd.DataFrame], offline=True) -> List[pd.DataFrame]:
         """
@@ -190,6 +196,8 @@ class StressPreprocessor:
         """
         self.subj_id = subj_id
         dfs = self.load_data(subpaths, subject_path)
+
+        self.visualize(dfs)
         prep_dfs = self.clean_and_validate(dfs)
         new_feats_dfs = self.extract_features(prep_dfs)
         self.save_preprocessed_data(new_feats_dfs, subj_id)
