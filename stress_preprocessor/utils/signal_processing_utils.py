@@ -44,7 +44,7 @@ def extract_neuro_features(dfs: Union[pd.DataFrame, List[pd.DataFrame]], sr_hz: 
         signal = df[signal_col]
 
         if signal_type == 'ECG':
-            # Compute ECG features using NeuroKit2
+            # Compute ECG features using NeuroKit2 (Warnings are caught here!)
             with warnings.catch_warnings(record=True) as caught_warnings:
                 neuro_processed, info = nk.ecg_process(signal, sampling_rate=int(sr_hz))
                 if offline:
@@ -83,7 +83,7 @@ def extract_neuro_features(dfs: Union[pd.DataFrame, List[pd.DataFrame]], sr_hz: 
 
         # Log any warnings that were caught
         for warning in caught_warnings:
-            logging.warning(str(warning.message))
+            logging.warning("Neurokit2: " + str(warning.message))
 
     return neuro_feats_dfs
 
@@ -111,5 +111,3 @@ def get_sampling_rate(dfs: List[pd.DataFrame], time_col: str) -> List[float]:
         sampling_rate = 1 / time_interval
         sampling_rates.append(sampling_rate)
     return sampling_rates
-
-

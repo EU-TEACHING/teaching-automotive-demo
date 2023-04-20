@@ -1,3 +1,6 @@
+import logging
+import sys
+
 import pandas as pd
 
 from stress_preprocessor.config import Config
@@ -12,6 +15,10 @@ def main(streamed_array):
 
 
 if __name__ == '__main__':
+    logging.root.handlers = []
+    logging.basicConfig(format="%(asctime)s: %(levelname)s: %(message)s", level=logging.INFO,
+                        datefmt="%Y-%m-%d %H:%M:%S", handlers=[logging.FileHandler("online_logs.log"),
+                                                               logging.StreamHandler(sys.stdout)])
     config = Config('stress_preprocessor/config/config.json')
     # Simulate streaming
     mock_filepath = 'stress_preprocessor/data/automotive_study_2/SUBJ_01_DATA/Scenario_01.Case_set_1.Scenario01_Comfort/results/icos/SUBJ_01_MOCK_01.csv'
@@ -22,8 +29,6 @@ if __name__ == '__main__':
     df.reset_index(inplace=True, drop=True)
 
     for i in range(len(df)):
-        df = df.iloc[i:+1000, :]
-        array = df.values
+        df_chunk = df.iloc[i:(i + 1000), :]
+        array = df_chunk.values
         main(array)
-
-
