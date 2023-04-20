@@ -60,7 +60,7 @@ def extract_neuro_features(dfs: Union[pd.DataFrame, List[pd.DataFrame]], sr_hz_l
 
         if offline:
             # Save neuro features plots
-            subj_dir = os.path.join(graph_path, f"SUBJ_{participant}")
+            subj_dir = os.path.join(graph_path, f"SUBJ_{participant}_neurokit_features")
             if not os.path.exists(subj_dir):
                 os.makedirs(subj_dir)
 
