@@ -51,4 +51,4 @@ def plot_timeseries_raw(df_list, value_col: str, time_col: str, scenario_col: st
         os.makedirs(save_path + '/' + folder_name)
 
     fig.savefig(f"{save_path}/{folder_name}/{participant_id}_{signal_type}.png")
-    plt.show()
+    # plt.show()

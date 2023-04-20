@@ -1,5 +1,7 @@
 import logging
 import os
+
+import numpy as np
 import pandas as pd
 import time
 from typing import Dict, List
@@ -106,7 +108,6 @@ class StressPreprocessor:
         plot_timeseries_raw(dfs, self.config.gsr_col, self.config.time_col, self.config.scenario_col,
                             self.config.mode_col, self.config.modes, self.subj_id, self.config.graph_path, "GSR")
 
-
     def extract_features(self, dfs: List[pd.DataFrame], offline=True) -> List[pd.DataFrame]:
         """
         Extracts physiological features and first-order differences features from a list of dataframes.
@@ -120,17 +121,18 @@ class StressPreprocessor:
         """
 
         start = time.time()
-        sr_list = get_sampling_rate(dfs, self.config.time_col)
+
+        # sr_list = get_sampling_rate(dfs, self.config.time_col)
 
         # Extract ECG features from each dataframe in the input list.
-        ecg_feats_dfs = extract_neuro_features(dfs, sr_list, self.config.ecg_col, self.config.target_col,
-                                               self.config.time_col, self.subj_id,
+        ecg_feats_dfs = extract_neuro_features(dfs, self.config.sampling_rate_hz, self.config.ecg_col,
+                                               self.config.target_col, self.config.time_col, self.subj_id,
                                                self.config.scenario_col, self.config.mode_col, self.config.modes,
                                                self.config.graph_path, "ECG", offline)
 
         # Extract EDA features from each dataframe in the input list.
-        eda_feats_dfs = extract_neuro_features(dfs, sr_list, self.config.gsr_col, self.config.target_col,
-                                               self.config.time_col, self.subj_id,
+        eda_feats_dfs = extract_neuro_features(dfs, self.config.sampling_rate_hz, self.config.gsr_col,
+                                               self.config.target_col, self.config.time_col, self.subj_id,
                                                self.config.scenario_col, self.config.mode_col, self.config.modes,
                                                self.config.graph_path, "EDA", offline)
 
@@ -202,9 +204,12 @@ class StressPreprocessor:
         new_feats_dfs = self.extract_features(prep_dfs)
         self.save_preprocessed_data(new_feats_dfs, subj_id)
 
-    def online_run(self, array):
+    def online_run(self, array: np.ndarray) -> pd.DataFrame:
+        start = time.time()
         dfs = self.load_data_online(array)
         prep_dfs = self.clean_and_validate(dfs)
         new_feats_dfs = self.extract_features(prep_dfs, offline=False)  # Using offline=False to indicate this is online
+        stop = time.time()
+        logging.info(f"Overall latency (secs): {stop - start}")
 
-        return new_feats_dfs
+        return new_feats_dfs[0]

@@ -22,7 +22,7 @@ if __name__ == '__main__':
     df.reset_index(inplace=True, drop=True)
 
     for i in range(len(df)):
-        df = df.iloc[i:3000, :]
+        df = df.iloc[i:+1000, :]
         array = df.values
         main(array)
 
