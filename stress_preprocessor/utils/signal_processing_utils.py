@@ -111,3 +111,38 @@ def get_sampling_rate(dfs: List[pd.DataFrame], time_col: str) -> List[float]:
         sampling_rate = 1 / time_interval
         sampling_rates.append(sampling_rate)
     return sampling_rates
+
+
+# TODO: this is based on previous version, needs to be very refactored, if upsampling is absolutely necessary
+def resample_dataframe(df: pd.DataFrame, timestamp_col: str, value_col: str, group_col: str, participant_col: str,
+                       target_freq: str) -> pd.DataFrame:
+    """Resample a time series DataFrame to a specified frequency.
+
+    Args:
+        df (pandas.DataFrame): The DataFrame to resample.
+        timestamp_col (str): The name of the column containing the timestamp data.
+        value_col (str): The name of the column containing the data to be resampled.
+        target_freq (str): The target frequency to which the DataFrame should be resampled.
+            Must be a valid pandas frequency string (e.g., '1H', '1D', '1W').
+
+    Returns:
+        pandas.DataFrame: The resampled DataFrame with a DateTimeIndex and missing values filled forward.
+
+    Raises:
+        ValueError: If the specified timestamp column is not a valid datetime column.
+
+    """
+    # Set timestamp column as DataFrame index
+    df.set_index(timestamp_col, inplace=True)
+
+    # Resample DataFrame to target frequency
+    resampled_df = df.resample(target_freq).agg({participant_col: 'first',
+                                                 # TODO add rest of the columns here
+                                                 group_col: 'first',
+                                                 value_col: 'mean'})
+
+    # Reset the index to timestamp_col column name
+    resampled_df.reset_index(inplace=True)
+    resampled_df.rename(columns={'index': 'timestamp_col'}, inplace=True)
+
+    return resampled_df
