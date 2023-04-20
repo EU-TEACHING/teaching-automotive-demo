@@ -10,7 +10,7 @@ import pandas as pd
 from stress_preprocessor.utils.preprocessing_utils import prefix_columns
 
 
-def extract_neuro_features(dfs: Union[pd.DataFrame, List[pd.DataFrame]], sr_hz_list: List[float], signal_col: str,
+def extract_neuro_features(dfs: Union[pd.DataFrame, List[pd.DataFrame]], sr_hz: int, signal_col: str,
                            target_col: str, time_col: str, participant: str, scenario_col: str, mode_col: str,
                            modes: Dict[str, str], graph_path: str, signal_type: str, offline) -> List[pd.DataFrame]:
     """
@@ -18,7 +18,7 @@ def extract_neuro_features(dfs: Union[pd.DataFrame, List[pd.DataFrame]], sr_hz_l
 
     Args:
         dfs: A list of pandas dataframes containing ECG data.
-        sr_hz_list: A list of sampling rates, in Hz, corresponding to the dataframes in `dfs`.
+        sr_hz: Sampling rate, in Hz
         signal_col: The name of the ECG or EDA/GSR column in each dataframe.
         target_col: The name of the prediction target column, e.g., stress.
         time_col: The timestamp column
@@ -46,15 +46,15 @@ def extract_neuro_features(dfs: Union[pd.DataFrame, List[pd.DataFrame]], sr_hz_l
         if signal_type == 'ECG':
             # Compute ECG features using NeuroKit2
             with warnings.catch_warnings(record=True) as caught_warnings:
-                neuro_processed, info = nk.ecg_process(signal, sampling_rate=int(sr_hz_list[idx]))
+                neuro_processed, info = nk.ecg_process(signal, sampling_rate=int(sr_hz))
                 if offline:
-                    nk.ecg_plot(neuro_processed, info, int(sr_hz_list[idx]))
+                    nk.ecg_plot(neuro_processed, info, int(sr_hz))
         elif signal_type == "EDA":
             # Compute EDA features using NeuroKit2
             with warnings.catch_warnings(record=True) as caught_warnings:
-                neuro_processed, info = nk.eda_process(signal, sampling_rate=int(sr_hz_list[idx]))
+                neuro_processed, info = nk.eda_process(signal, sampling_rate=int(sr_hz))
                 if offline:
-                    nk.eda_plot(neuro_processed, int(sr_hz_list[idx]))
+                    nk.eda_plot(neuro_processed, int(sr_hz))
         else:
             raise ValueError("Invalid value for signal_type. Must be 'ECG' or 'EDA'.")
 
