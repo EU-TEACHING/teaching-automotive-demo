@@ -50,7 +50,7 @@ from stress_preprocessor.preprocessors.preprocessor import StressPreprocessor
 class SlidingWindowBuffer(object):
     def __init__(self, baseline_path: str, buffer_size: int) -> None:
         self.baseline_path = baseline_path
-        self.config = json.load(open("config.json"))
+        self.config = Config('stress_preprocessor/config/config.json')
         baseline_data = pd.read_csv(baseline_path, sep=";")
         self.window = baseline_data.to_dict("records")[-buffer_size:]
         self.last_returned = len(self.window)
