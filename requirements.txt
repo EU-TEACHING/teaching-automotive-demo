@@ -1,3 +1,7 @@
 pandas~=1.5.3
 pytest~=7.2.2
 neurokit2~=0.2.3
+torch==1.12.1+cu113
+tensorflow==2.9.0
+ray[air]
+--extra-index-url https://download.pytorch.org/whl/cu113
