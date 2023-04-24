@@ -38,7 +38,7 @@ def plot_timeseries_raw(df_list, value_col: str, time_col: str, scenario_col: st
 
     for i, df in enumerate(df_list):
         scenario = df[scenario_col].iloc[0]
-        mode = modes[df[mode_col].iloc[0]]
+        mode = modes[f"{df[mode_col].iloc[0]}"]
 
         axs[i].plot(df[time_col], df[value_col])
         axs[i].set_title(f"Scenario: {scenario}, Mode: {mode}")

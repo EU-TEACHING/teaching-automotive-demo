@@ -40,7 +40,7 @@ def extract_neuro_features(dfs: Union[pd.DataFrame, List[pd.DataFrame]], sr_hz: 
     neuro_feats_dfs = []
     for idx, df in enumerate(dfs):
         scenario_id = df[scenario_col].iloc[0]
-        mode = modes[df[mode_col].iloc[0]]
+        mode = modes[f"{df[mode_col].iloc[0]}"]
         signal = df[signal_col]
 
         if signal_type == 'ECG':
@@ -53,8 +53,46 @@ def extract_neuro_features(dfs: Union[pd.DataFrame, List[pd.DataFrame]], sr_hz: 
             # Compute EDA features using NeuroKit2
             with warnings.catch_warnings(record=True) as caught_warnings:
                 neuro_processed, info = nk.eda_process(signal, sampling_rate=int(sr_hz))
+                import numpy as np
+                neuro_processed['index_time'] = np.arange(len(df))
                 if offline:
-                    nk.eda_plot(neuro_processed, int(sr_hz))
+                    # nk.eda_plot(neuro_processed, int(sr_hz))
+                    # lines = neuro_processed[["EDA_Raw", "EDA_Clean"]].plot.line()
+                    # Create figure and subplots
+                    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10, 12), sharex=True)
+
+                    # Plot 1st plot: EDA_Raw and EDA_Clean
+                    ax1.plot(neuro_processed['index_time'], neuro_processed["EDA_Raw"], color='blue', linewidth=2, label='EDA_Raw')
+                    ax1.plot(neuro_processed['index_time'], neuro_processed["EDA_Clean"], color='red', linewidth=2, label='EDA_Clean')
+                    ax1.set_ylabel('EDA (arbitrary units)')
+                    ax1.set_title('EDA_Raw vs EDA_Clean')
+                    ax1.legend()
+
+                    # Plot 2nd plot: SCR_Onsets, SCR_Peaks, SCR_Recovery
+                    peaks = neuro_processed[neuro_processed['SCR_Peaks'] == 1]
+                    onsets = neuro_processed[neuro_processed['SCR_Onsets'] == 1]
+                    recovery = neuro_processed[neuro_processed['SCR_Recovery'] == 1]
+
+                    ax2.plot(neuro_processed['index_time'], neuro_processed['EDA_Clean'], color='blue', linewidth=2, label='EDA_Clean')
+                    ax2.scatter(peaks.index, peaks['EDA_Clean'], color='red', label='SCR_Peaks')
+                    ax2.scatter(onsets.index, onsets['EDA_Clean'], color='blue', label='SCR_Onsets')
+                    ax2.scatter(recovery.index, recovery['EDA_Clean'], color='green', label='SCR_Recovery')
+                    ax2.set_ylabel('EDA (arbitrary units)')
+                    ax2.set_title('SCR_Onsets, SCR_Peaks, SCR_Recovary')
+                    ax2.legend()
+
+                    # Plot 3rd plot: EDA_Tonic
+                    ax3.plot(neuro_processed['index_time'], neuro_processed[["EDA_Tonic"]], color='magenta', linewidth=2, label='EDA_Tonic')
+                    ax3.set_xlabel('Time (s)')
+                    ax3.set_ylabel('EDA Tonic (arbitrary units)')
+                    ax3.set_title('EDA_Tonic')
+                    ax3.legend()
+
+                    # Adjust spacing between subplots
+                    plt.subplots_adjust(hspace=0.3)
+
+                    neuro_processed.drop(columns=["index_time"], inplace=True)
+
         else:
             raise ValueError("Invalid value for signal_type. Must be 'ECG' or 'EDA'.")
 
@@ -67,7 +105,7 @@ def extract_neuro_features(dfs: Union[pd.DataFrame, List[pd.DataFrame]], sr_hz: 
             fig = plt.gcf()
             # Create the filename and the full save path to save the plot
             filename = f"{signal_type}_FEATS_SUBJ_{participant}_SCEN_{scenario_id}_MODE_{mode}.png"
-            full_path = os.path.join(graph_path, filename)
+            full_path = os.path.join(subj_dir, filename)
             fig.savefig(full_path, dpi=300, bbox_inches='tight')
 
         # Add prefixes to column names, to differentiate between ECG and EDA feats

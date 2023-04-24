@@ -11,11 +11,12 @@ def main(subj_id):
     config = Config('stress_preprocessor/config/config.json')
 
     # TODO: Check real subject path
-    subject_path = f"stress_preprocessor/data/automotive_study_2/SUBJ_{subj_id}_DATA"
+    subject_path = f"stress_preprocessor/data/automotive_study_2/TEACHING_2023"
     subpaths = config.subpaths
+    baseline_subpath = config.baseline_subpath
 
     preprocessor = StressPreprocessor(config)
-    preprocessor.run(subpaths, subject_path, subj_id)
+    preprocessor.run(subpaths, baseline_subpath, subject_path, subj_id)
 
 
 if __name__ == '__main__':

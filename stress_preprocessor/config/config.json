@@ -1,19 +1,20 @@
 {
+  "baseline_subpath": "Scenario_00.SUBJ_XX.Scenario00_FreeDriving/results/mcx/DATA_OUT_in.csv",
   "subpaths": {
-    "s1_eco": "Scenario_01.Case_set_1.Scenario01_Eco/results/icos/SUBJ_01_MOCK_01.csv",
-    "s1_sport": "Scenario_01.Case_set_1.Scenario01_Sport/results/icos/SUBJ_01_MOCK_01.csv",
-    "s1_comfort": "Scenario_01.Case_set_1.Scenario01_Comfort/results/icos/SUBJ_01_MOCK_01.csv",
-    "s2_eco": "Scenario_02.Case_set_1.Scenario01_Eco/results/icos/SUBJ_01_MOCK_01.csv",
-    "s2_sport": "Scenario_02.Case_set_1.Scenario01_Sport/results/icos/SUBJ_01_MOCK_01.csv",
-    "s2_comfort": "Scenario_02.Case_set_1.Scenario01_Comfort/results/icos/SUBJ_01_MOCK_01.csv",
-    "s3_eco": "Scenario_03.Case_set_1.Scenario01_Eco/results/icos/SUBJ_01_MOCK_01.csv",
-    "s3_sport": "Scenario_03.Case_set_1.Scenario01_Sport/results/icos/SUBJ_01_MOCK_01.csv",
-    "s3_comfort": "Scenario_03.Case_set_1.Scenario01_Comfort/results/icos/SUBJ_01_MOCK_01.csv"
+    "s1_eco": "Scenario_01.SUBJ_XX.Scenario01_Eco/results/mcx/DATA_OUT_in.csv",
+    "s1_sport": "Scenario_01.SUBJ_XX.Scenario01_Sport/results/mcx/DATA_OUT_in.csv",
+    "s1_comfort": "Scenario_01.SUBJ_XX.Scenario01_Comfort/results/mcx/DATA_OUT_in.csv",
+    "s2_eco": "Scenario_02.SUBJ_XX.Scenario02_Eco/results/mcx/DATA_OUT_in.csv",
+    "s2_sport": "Scenario_02.SUBJ_XX.Scenario02_Sport/results/mcx/DATA_OUT_in.csv",
+    "s2_comfort": "Scenario_02.SUBJ_XX.Scenario02_Comfort/results/mcx/DATA_OUT_in.csv",
+    "s3_eco": "Scenario_03.SUBJ_XX.Scenario03_Eco/results/mcx/DATA_OUT_in.csv",
+    "s3_sport": "Scenario_03.SUBJ_XX.Scenario03_Sport/results/mcx/DATA_OUT_in.csv",
+    "s3_comfort": "Scenario_03.SUBJ_XX.Scenario03_Comfort/results/mcx/DATA_OUT_in.csv"
   },
-  "target_col": "Stress",
+  "target_col": "Slider_value",
   "scenario_col": "ScenarioID",
-  "mode_col": "RepetitionID",
-  "participant_col": "subID",
+  "mode_col": "Maneuvre_ID",
+  "participant_col": "Subject_ID",
   "time_col": "Time",
   "ecg_col": "ECG",
   "gsr_col": "GSR",
@@ -34,6 +35,15 @@
   "processed_data_path": "stress_preprocessor/data/processed",
   "save_single_df": true,
   "online": {
-    "array_schema": ["Time", "RepetitionID", "ScenarioID", "subID", "ECG", "GSR", "ErrorCount", "Stress"]
+    "array_schema": [
+      "Time",
+      "ECG",
+      "GSR",
+      "Slider_value",
+      "ErrorCount",
+      "ScenarioID",
+      "Maneuvre_ID",
+      "Subject_ID"
+    ]
   }
 }

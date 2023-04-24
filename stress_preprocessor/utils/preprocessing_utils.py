@@ -116,9 +116,9 @@ def impute_null(dfs: List[pd.DataFrame], error_col: str, ecg_col: str, gsr_col: 
         and null values in scenario_col, mode_col, and participant_col imputed using forward and backward fill.
     """
     # Null out ECG/GSR values for rows marked as error (i.e., the error column is !=0)
-    nulled_errors_dfs = errors_to_null(dfs, error_col, ecg_col, gsr_col)
+    # nulled_errors_dfs = errors_to_null(dfs, error_col, ecg_col, gsr_col)
     imputed_dfs = []
-    for df in nulled_errors_dfs:
+    for df in dfs:
         # Impute null values in ecg_col and gsr_col with interpolation
         df[ecg_col] = df[ecg_col].interpolate()
         df[gsr_col] = df[gsr_col].interpolate()
