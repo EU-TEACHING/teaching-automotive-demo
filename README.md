@@ -130,6 +130,14 @@ memory usage: 34.5+ MB
 #### ECG AND eda PLOTS
 Saved at `stress_preprocessor/graphs`
 
+### Run the online preprocessor
+To do the online preprocessing the "online_run" function should be used which is 
+located in stress_preprocessor/preprocessors/preprocessor.py
+
+To run a mock preprocessing, run:
+
+`python online_preprocess_run.py`
+
 #### Remaining issues
 1. Visualize raw time series, must be adapted from previous version
 2. Error handling based on the error_col, replace row with null values

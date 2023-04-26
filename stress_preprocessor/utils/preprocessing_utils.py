@@ -119,6 +119,8 @@ def impute_null(dfs: List[pd.DataFrame], error_col: str, ecg_col: str, gsr_col: 
     # nulled_errors_dfs = errors_to_null(dfs, error_col, ecg_col, gsr_col)
     imputed_dfs = []
     for df in dfs:
+        # If gsr values are lower than 0 replace with NaN
+        df[gsr_col] = df[gsr_col].apply(lambda x: float('nan') if x <= 0 else x)
         # Impute null values in ecg_col and gsr_col with interpolation
         df[ecg_col] = df[ecg_col].interpolate()
         df[gsr_col] = df[gsr_col].interpolate()
@@ -434,3 +436,28 @@ def resample_dataframe(df: pd.DataFrame, timestamp_col: str, value_col: str, gro
     resampled_df.rename(columns={'index': 'timestamp_col'}, inplace=True)
 
     return resampled_df
+
+
+def mapper(stream_dict):
+    """Rename the names in the streaming dictionary during the online run.
+
+    Args:
+        stream_dict (dict): The dictionary that comes from streaming.
+
+    Returns:
+        The streaming dictionary with the updated keys.
+
+    """
+    mapper = {"timestamp": "Time", "sensor_hr": "ECG", "sensor_gsr": "GSR", "sensor_value": "Slider_value"}
+    updated_d = {}
+
+    # Iterate through the items in the original dictionary
+    for key, value in stream_dict.items():
+        # If the key is found in the mapper, update the key using the mapper
+        if key in mapper:
+            updated_key = mapper[key]
+            updated_d[updated_key] = value
+        else:
+            updated_d[key] = value
+
+    return updated_d
