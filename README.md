@@ -131,8 +131,9 @@ memory usage: 34.5+ MB
 Saved at `stress_preprocessor/graphs`
 
 ### Run the online preprocessor
-To do the online preprocessing the "online_run" function should be used which is 
-located in stress_preprocessor/preprocessors/preprocessor.py
+To do the online preprocessing initialize the Preprocessor and then
+call Preprocessor's "online_run" passing the streaming dictionary to it.
+The Preprocessor is located in stress_preprocessor/preprocessors/preprocessor.py
 
 To run a mock preprocessing, run:
 
