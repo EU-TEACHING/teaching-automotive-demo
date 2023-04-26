@@ -8,7 +8,7 @@ from typing import Dict, List
 import warnings
 
 from stress_preprocessor.utils.preprocessing_utils import clean_duplicates, validate_timestamps, compute_diff, \
-    impute_null
+    impute_null, mapper
 from stress_preprocessor.utils.signal_processing_utils import extract_neuro_features, get_sampling_rate
 from stress_preprocessor.utils.visualization_utils import plot_timeseries_raw
 
@@ -304,12 +304,13 @@ class StressPreprocessor:
 
     def online_run(self, stream_dict: dict) -> np.array:
         start = time.time()
-        stream_dict["Time"] = float(stream_dict["Time"]) + self.last_timestamp
         stream_dict["ErrorCount"] = 0
         stream_dict["ScenarioID"] = 0
         stream_dict["Maneuvre_ID"] = 0
         stream_dict["Subject_ID"] = 0
-        self.window.append(stream_dict)
+        stream_dict_mapped = mapper(stream_dict)
+        stream_dict_mapped["Time"] = float(stream_dict_mapped["Time"]) + self.last_timestamp
+        self.window.append(stream_dict_mapped)
         self.window = self.window[1:]
         self.last_returned -= 1
         print(f"last_returned: {self.last_returned}")
