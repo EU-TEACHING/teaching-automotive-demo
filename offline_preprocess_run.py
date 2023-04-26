@@ -8,9 +8,9 @@ from stress_preprocessor.preprocessors.preprocessor import StressPreprocessor
 
 
 def main(subj_id):
-    config = Config('stress_preprocessor/config/config.json')
+    config = Config("stress_preprocessor/config/config.json")
 
-    subject_path = f"stress_preprocessor/data/automotive_study_2/TEACHING_2023"
+    subject_path = f"/raid/decaro/datasets/raw/AVLStudy"
     subpaths = config.subpaths
     baseline_subpath = config.baseline_subpath
 
@@ -18,19 +18,21 @@ def main(subj_id):
     preprocessor.run(subpaths, baseline_subpath, subject_path, subj_id)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     start = time.time()
 
     logging.root.handlers = []
-    logging.basicConfig(format="%(asctime)s: %(levelname)s: %(message)s", level=logging.INFO,
-                        datefmt="%Y-%m-%d %H:%M:%S", handlers=[logging.FileHandler("logs.log"),
-                                                               logging.StreamHandler(sys.stdout)])
+    logging.basicConfig(
+        format="%(asctime)s: %(levelname)s: %(message)s",
+        level=logging.INFO,
+        datefmt="%Y-%m-%d %H:%M:%S",
+        handlers=[logging.FileHandler("logs.log"), logging.StreamHandler(sys.stdout)],
+    )
 
-    parser = argparse.ArgumentParser(description='Description of your program')
-    parser.add_argument('-sid', '--subj_id',
-                        required=True,
-                        type=str,
-                        help="The participant's ID.")
+    parser = argparse.ArgumentParser(description="Description of your program")
+    parser.add_argument(
+        "-sid", "--subj_id", required=True, type=str, help="The participant's ID."
+    )
 
     args = parser.parse_args()
 
