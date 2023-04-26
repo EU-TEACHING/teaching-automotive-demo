@@ -125,9 +125,9 @@ def impute_null(dfs: List[pd.DataFrame], error_col: str, ecg_col: str, gsr_col: 
         df[ecg_col] = df[ecg_col].interpolate()
         df[gsr_col] = df[gsr_col].interpolate()
         df[target_col] = df[target_col].interpolate()
-        df[ecg_col] = df[ecg_col].fillna(method='ffill')
-        df[gsr_col] = df[gsr_col].fillna(method='ffill')
-        df[target_col] = df[target_col].fillna(method='ffill')
+        df[ecg_col] = df[ecg_col].fillna(method='ffill').fillna(method='bfill')
+        df[gsr_col] = df[gsr_col].fillna(method='ffill').fillna(method='bfill')
+        df[target_col] = df[target_col].fillna(method='ffill').fillna(method='bfill')
 
         # Impute null values in scenario_col, mode_col, and participant_col with forward and backward fill
         df[scenario_col] = df[scenario_col].fillna(method='ffill').fillna(method='bfill')
