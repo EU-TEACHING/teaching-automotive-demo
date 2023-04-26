@@ -4,12 +4,19 @@ import os
 import numpy as np
 import pandas as pd
 import time
-from typing import Dict, List
+from typing import Dict, List, Tuple
 import warnings
 
-from stress_preprocessor.utils.preprocessing_utils import clean_duplicates, validate_timestamps, compute_diff, \
-    impute_null
-from stress_preprocessor.utils.signal_processing_utils import extract_neuro_features, get_sampling_rate
+from stress_preprocessor.utils.preprocessing_utils import (
+    clean_duplicates,
+    validate_timestamps,
+    compute_diff,
+    impute_null,
+)
+from stress_preprocessor.utils.signal_processing_utils import (
+    extract_neuro_features,
+    get_sampling_rate,
+)
 from stress_preprocessor.utils.visualization_utils import plot_timeseries_raw
 
 
@@ -22,15 +29,25 @@ class StressPreprocessor:
     def float_to_integer(self, dfs):
         formatted_types_dfs = []
         for df in dfs:
-            df = df.astype({self.config.error_col: 'Int32', self.config.scenario_col: 'Int32',
-                            self.config.mode_col: 'Int32', self.config.participant_col: 'Int32'})
+            df = df.astype(
+                {
+                    self.config.error_col: "Int32",
+                    self.config.scenario_col: "Int32",
+                    self.config.mode_col: "Int32",
+                    self.config.participant_col: "Int32",
+                }
+            )
             df.reset_index(inplace=True, drop=True)
             formatted_types_dfs.append(df)
         return formatted_types_dfs
 
-    def load_data(self, subpaths: Dict[str, str], baseline_subpath: str, subj_path: str, subj_id: str) -> [
-        List[pd.DataFrame],
-        List[pd.DataFrame]]:
+    def load_data(
+        self,
+        subpaths: Dict[str, str],
+        baseline_subpath: str,
+        subj_path: str,
+        subj_id: str,
+    ) -> Tuple[List[pd.DataFrame], List[pd.DataFrame]]:
         """
         Offline Load data from a subject's directory into a list of pandas DataFrames.
 
@@ -61,15 +78,34 @@ class StressPreprocessor:
                 raise FileNotFoundError(f"Baseline data not found: {filepath}")
 
             try:
-                baseline_df = pd.read_csv(filepath, header=1)
-                baseline_df = baseline_df.drop(0)
-                baseline_df = baseline_df[[self.config.time_col, self.config.ecg_col, self.config.gsr_col,
-                                           self.config.target_col, self.config.error_col, self.config.scenario_col,
-                         self.config.mode_col, self.config.participant_col]]
-                baseline_df = baseline_df.astype({self.config.time_col: 'float32', self.config.ecg_col: 'float32',
-                                                  self.config.gsr_col: 'float32', self.config.target_col: 'float32',
-                                                  self.config.error_col: 'float32', self.config.scenario_col: 'float32',
-                                                  self.config.mode_col: 'float32', self.config.participant_col: 'float32'})
+                baseline_df = pd.read_csv(
+                    filepath
+                )  # , header=1) # Commented after manual cleaning
+                # baseline_df = baseline_df.drop(0) # Commented after manual cleaning
+                baseline_df = baseline_df[
+                    [
+                        self.config.time_col,
+                        self.config.ecg_col,
+                        self.config.gsr_col,
+                        self.config.target_col,
+                        self.config.error_col,
+                        self.config.scenario_col,
+                        self.config.mode_col,
+                        self.config.participant_col,
+                    ]
+                ]
+                baseline_df = baseline_df.astype(
+                    {
+                        self.config.time_col: "float32",
+                        self.config.ecg_col: "float32",
+                        self.config.gsr_col: "float32",
+                        self.config.target_col: "float32",
+                        self.config.error_col: "float32",
+                        self.config.scenario_col: "float32",
+                        self.config.mode_col: "float32",
+                        self.config.participant_col: "float32",
+                    }
+                )
                 baseline_df.reset_index(inplace=True, drop=True)
                 baseline_df_list = [baseline_df]
                 baseline_df_list = self.float_to_integer(baseline_df_list)
@@ -90,15 +126,34 @@ class StressPreprocessor:
                 continue
 
             try:
-                df = pd.read_csv(filepath, header=1)
-                df = df.drop(0)
-                df = df[[self.config.time_col, self.config.ecg_col, self.config.gsr_col,
-                         self.config.target_col, self.config.error_col, self.config.scenario_col,
-                         self.config.mode_col, self.config.participant_col]]
-                df = df.astype({self.config.time_col: 'float32', self.config.ecg_col: 'float32',
-                                self.config.gsr_col: 'float32', self.config.target_col: 'float32',
-                                self.config.error_col: 'float32', self.config.scenario_col: 'float32',
-                                self.config.mode_col: 'float32', self.config.participant_col: 'float32'})
+                df = pd.read_csv(
+                    filepath
+                )  # , header=1) # Commented after manual cleaning
+                # df = df.drop(0) # Commented after manual cleaning
+                df = df[
+                    [
+                        self.config.time_col,
+                        self.config.ecg_col,
+                        self.config.gsr_col,
+                        self.config.target_col,
+                        self.config.error_col,
+                        self.config.scenario_col,
+                        self.config.mode_col,
+                        self.config.participant_col,
+                    ]
+                ]
+                df = df.astype(
+                    {
+                        self.config.time_col: "float32",
+                        self.config.ecg_col: "float32",
+                        self.config.gsr_col: "float32",
+                        self.config.target_col: "float32",
+                        self.config.error_col: "float32",
+                        self.config.scenario_col: "float32",
+                        self.config.mode_col: "float32",
+                        self.config.participant_col: "float32",
+                    }
+                )
                 df.reset_index(inplace=True, drop=True)
 
                 dfs.append(df)
@@ -130,13 +185,23 @@ class StressPreprocessor:
                 self.config.participant_col,
             ]
         ]
-        df = df.astype({self.config.time_col: 'float32', self.config.ecg_col: 'float32', self.config.gsr_col: 'float32',
-                        self.config.target_col: 'float32', self.config.error_col: 'float32',
-                        self.config.scenario_col: 'float32', self.config.mode_col: 'float32',
-                        self.config.participant_col: 'float32'})
+        df = df.astype(
+            {
+                self.config.time_col: "float32",
+                self.config.ecg_col: "float32",
+                self.config.gsr_col: "float32",
+                self.config.target_col: "float32",
+                self.config.error_col: "float32",
+                self.config.scenario_col: "float32",
+                self.config.mode_col: "float32",
+                self.config.participant_col: "float32",
+            }
+        )
         return [df]
 
-    def clean_and_validate(self, baseline_df_list, dfs: List[pd.DataFrame]) -> [List[pd.DataFrame], List[pd.DataFrame]]:
+    def clean_and_validate(
+        self, baseline_df_list, dfs: List[pd.DataFrame]
+    ) -> Tuple[List[pd.DataFrame], List[pd.DataFrame]]:
         """
         Preprocesses a list of dataframes.
 
@@ -153,41 +218,80 @@ class StressPreprocessor:
             # Remove duplicate rows from each dataframe in the input list.
             no_dup_baseline_df_list = clean_duplicates(baseline_df_list)
             # Validate the remaining timestamps to ensure that they are uniformly spaced.
-            val_baseline_df_list = validate_timestamps(no_dup_baseline_df_list, self.config.time_col,
-                                                       self.config.sampling_rate_hz)
+            val_baseline_df_list = validate_timestamps(
+                no_dup_baseline_df_list,
+                self.config.time_col,
+                self.config.sampling_rate_hz,
+            )
 
             # Impute missing values: bfill and ffil for categorical, interpolation for numerical (neurokit default is ffill)
             # Before imputation, null values are added in error marked rows
-            imputed_baseline_df_list = impute_null(val_baseline_df_list, self.config.error_col, self.config.ecg_col,
-                                                   self.config.gsr_col,
-                                                   self.config.target_col, self.config.scenario_col,
-                                                   self.config.mode_col,
-                                                   self.config.participant_col)
+            imputed_baseline_df_list = impute_null(
+                val_baseline_df_list,
+                self.config.error_col,
+                self.config.ecg_col,
+                self.config.gsr_col,
+                self.config.target_col,
+                self.config.scenario_col,
+                self.config.mode_col,
+                self.config.participant_col,
+            )
         # Remove duplicate rows from each dataframe in the input list.
         no_dup_dfs = clean_duplicates(dfs)
         # Validate the remaining timestamps to ensure that they are uniformly spaced.
-        val_dfs = validate_timestamps(no_dup_dfs, self.config.time_col, self.config.sampling_rate_hz)
+        val_dfs = validate_timestamps(
+            no_dup_dfs, self.config.time_col, self.config.sampling_rate_hz
+        )
 
         # Impute missing values: bfill and ffil for categorical, interpolation for numerical (neurokit default is ffill)
         # Before imputation, null values are added in error marked rows
-        imputed_dfs = impute_null(val_dfs, self.config.error_col, self.config.ecg_col, self.config.gsr_col,
-                                  self.config.target_col, self.config.scenario_col, self.config.mode_col,
-                                  self.config.participant_col)
+        imputed_dfs = impute_null(
+            val_dfs,
+            self.config.error_col,
+            self.config.ecg_col,
+            self.config.gsr_col,
+            self.config.target_col,
+            self.config.scenario_col,
+            self.config.mode_col,
+            self.config.participant_col,
+        )
 
         stop = time.time()
-        logging.info(f"Data cleaning and timestamp validation latency (secs): {stop - start}")
+        logging.info(
+            f"Data cleaning and timestamp validation latency (secs): {stop - start}"
+        )
 
         return imputed_baseline_df_list, imputed_dfs
 
     def visualize(self, dfs: List[pd.DataFrame]):
         # Plot ECG raw
-        plot_timeseries_raw(dfs, self.config.ecg_col, self.config.time_col, self.config.scenario_col,
-                            self.config.mode_col, self.config.modes, self.subj_id, self.config.graph_path, "ECG")
+        plot_timeseries_raw(
+            dfs,
+            self.config.ecg_col,
+            self.config.time_col,
+            self.config.scenario_col,
+            self.config.mode_col,
+            self.config.modes,
+            self.subj_id,
+            self.config.graph_path,
+            "ECG",
+        )
         # Plot GSR raw
-        plot_timeseries_raw(dfs, self.config.gsr_col, self.config.time_col, self.config.scenario_col,
-                            self.config.mode_col, self.config.modes, self.subj_id, self.config.graph_path, "GSR")
+        plot_timeseries_raw(
+            dfs,
+            self.config.gsr_col,
+            self.config.time_col,
+            self.config.scenario_col,
+            self.config.mode_col,
+            self.config.modes,
+            self.subj_id,
+            self.config.graph_path,
+            "GSR",
+        )
 
-    def extract_features(self, dfs: List[pd.DataFrame], offline=True) -> List[pd.DataFrame]:
+    def extract_features(
+        self, dfs: List[pd.DataFrame], offline=True
+    ) -> List[pd.DataFrame]:
         """
         Extracts physiological features and first-order differences features from a list of dataframes.
 
@@ -204,16 +308,36 @@ class StressPreprocessor:
         # sr_list = get_sampling_rate(dfs, self.config.time_col)
 
         # Extract ECG features from each dataframe in the input list.
-        ecg_feats_dfs = extract_neuro_features(dfs, self.config.sampling_rate_hz, self.config.ecg_col,
-                                               self.config.target_col, self.config.time_col, self.subj_id,
-                                               self.config.scenario_col, self.config.mode_col, self.config.modes,
-                                               self.config.graph_path, "ECG", offline)
+        ecg_feats_dfs = extract_neuro_features(
+            dfs,
+            self.config.sampling_rate_hz,
+            self.config.ecg_col,
+            self.config.target_col,
+            self.config.time_col,
+            self.subj_id,
+            self.config.scenario_col,
+            self.config.mode_col,
+            self.config.modes,
+            self.config.graph_path,
+            "ECG",
+            offline,
+        )
 
         # Extract EDA features from each dataframe in the input list.
-        eda_feats_dfs = extract_neuro_features(dfs, self.config.sampling_rate_hz, self.config.gsr_col,
-                                               self.config.target_col, self.config.time_col, self.subj_id,
-                                               self.config.scenario_col, self.config.mode_col, self.config.modes,
-                                               self.config.graph_path, "EDA", offline)
+        eda_feats_dfs = extract_neuro_features(
+            dfs,
+            self.config.sampling_rate_hz,
+            self.config.gsr_col,
+            self.config.target_col,
+            self.config.time_col,
+            self.subj_id,
+            self.config.scenario_col,
+            self.config.mode_col,
+            self.config.modes,
+            self.config.graph_path,
+            "EDA",
+            offline,
+        )
 
         new_feats_dfs = []
         for ecg_feats_df, eda_feats_df in zip(ecg_feats_dfs, eda_feats_dfs):
@@ -232,8 +356,12 @@ class StressPreprocessor:
         logging.info(f"Feature extraction latency (secs): {stop - start}")
         return new_feats_dfs
 
-    def save_preprocessed_data(self, baseline_df_list: List[pd.DataFrame], dfs: List[pd.DataFrame],
-                               subj_id: str) -> None:
+    def save_preprocessed_data(
+        self,
+        baseline_df_list: List[pd.DataFrame],
+        dfs: List[pd.DataFrame],
+        subj_id: str,
+    ) -> None:
         """
         Save the preprocessed data to the "processed_data_path" defined in config. If "save_single_df" is True,
         all scenarios/modes will be saved in a single file, with time counter reset to 0 for each scenario/mode.
@@ -270,7 +398,13 @@ class StressPreprocessor:
 
         logging.info(f"Preprocessed data saved at {os.path.join(subj_dir, filename)}")
 
-    def run(self, subpaths: Dict[str, str], baseline_subpath: str, subject_path: str, subj_id: str) -> None:
+    def run(
+        self,
+        subpaths: Dict[str, str],
+        baseline_subpath: str,
+        subject_path: str,
+        subj_id: str,
+    ) -> None:
         """
         Offline Preprocessing pipeline: data loading, cleaning and validation, feature extraction, store preprocessed.
 
@@ -284,7 +418,9 @@ class StressPreprocessor:
             None
         """
         self.subj_id = subj_id
-        baseline_df_list, dfs = self.load_data(subpaths, baseline_subpath, subject_path, subj_id)
+        baseline_df_list, dfs = self.load_data(
+            subpaths, baseline_subpath, subject_path, subj_id
+        )
 
         self.visualize(dfs)
         prep_baseline_df_list, prep_dfs = self.clean_and_validate(baseline_df_list, dfs)
@@ -298,7 +434,9 @@ class StressPreprocessor:
         dfs = self.load_data_online(array)
         _, prep_dfs = self.clean_and_validate(None, dfs)
         prep_dfs = self.float_to_integer(prep_dfs)
-        new_feats_dfs = self.extract_features(prep_dfs, offline=False)  # Using offline=False to indicate this is online
+        new_feats_dfs = self.extract_features(
+            prep_dfs, offline=False
+        )  # Using offline=False to indicate this is online
         stop = time.time()
         logging.info(f"Overall latency (secs): {stop - start}")
 
