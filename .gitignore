@@ -131,3 +131,5 @@ dmypy.json
 .idea/
 
 .vscode
+
+stress_preprocessor/graphs
