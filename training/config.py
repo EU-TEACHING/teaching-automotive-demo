@@ -2,20 +2,20 @@ from ray import tune
 
 from typing import Literal
 
-EXP_PATH = "/raid/decaro/experiments/avl"
+EXP_PATH = "/raid/decaro/experiments/avl_study"
 
 
-def get_exp_dir(method: str):
-    return f"{EXP_PATH}/{method}"
+def get_exp_dir(user_id: str, method: str):
+    return f"{EXP_PATH}/{user_id}/{method}"
 
 
-def get_hparams_config(method: str):
+def get_hparams_config(user_id: str, method: str):
     config = {
         "method": method,
         "data": {
-            "user_id": None,
-            "scenario_ids": [],
-            "maneuvre_ids": [],
+            "user_id": user_id,
+            "columns": tune.choice(["", "_diff"]),
+            "norm": tune.choice(["baseline", "sequence"]),
         },
     }
     models = {
@@ -48,14 +48,14 @@ def get_hparams_config(method: str):
         "mu": 0,
         "eta": 1e-2,
         "sigma": tune.uniform(0.1, 0.99),
-        "epochs": tune.choice([10, 12, 15]),
+        "epochs": tune.choice([3, 5, 10, 12]),
     }
-    models["weights"] = [1, tune.uniform(1, 4)]
+    # models["weights"] = [1, tune.uniform(1, 4)]
 
     if method in ["ridge", "ip"]:
         config["reservoir"] = models["reservoir"]
         config["l2"] = models["l2"]
-        config["weights"] = models["weights"]
+        # config["weights"] = models["weights"]
         if method == "ip":
             config["reservoir"]["net_gain_and_bias"] = True
             config["ip"] = models["ip"]
@@ -73,5 +73,5 @@ def get_analysis(
     mode: Literal["min", "max"],
 ):
     return tune.ExperimentAnalysis(
-        f"{exp_dir}/{phase}", default_metric="eval_score", default_mode=mode
+        f"{exp_dir}/{phase}", default_metric="eval_loss", default_mode=mode
     )

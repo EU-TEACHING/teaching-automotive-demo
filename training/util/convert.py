@@ -1,9 +1,11 @@
+from typing import Dict, Union
 import keras
 import tensorflow as tf
 import torch
+import numpy as np
 
 
-def convert_to_tf(torch_path: str, tf_path: str) -> keras.Model:
+def convert_to_tf(torch_path_or_model: Union[str, Dict], tf_path: str) -> keras.Model:
     """Converts a PyTorch model to a TensorFlow model.
 
     Args:
@@ -12,7 +14,10 @@ def convert_to_tf(torch_path: str, tf_path: str) -> keras.Model:
     Returns:
         The converted TensorFlow model.
     """
-    model = torch.load(torch_path)
+    if isinstance(torch_path_or_model, str):
+        model = torch.load(torch_path_or_model)
+    else:
+        model = torch_path_or_model
     reservoir, readout = model["reservoir"], model["readout"]
     W_in = reservoir.W_in.detach().numpy()
     W_hat = reservoir.W_hat.detach().numpy()
