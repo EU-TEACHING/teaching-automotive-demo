@@ -459,3 +459,5 @@ def mapper(stream_dict):
             updated_d[updated_key] = value
         else:
             updated_d[key] = value
+
+    return updated_d
