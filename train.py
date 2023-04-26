@@ -1,8 +1,9 @@
 import ray, argparse
-from training.exp.config import get_hparams_config, get_analysis, get_exp_dir
-from training.exp.phase import design
+from training.config import get_hparams_config, get_analysis, get_exp_dir
+from training.phase import design
 
 parser = argparse.ArgumentParser()
+parser.add_argument("user_id", type=str)
 parser.add_argument("method", type=str)
 parser.add_argument("phase", type=str, default="mrt")
 parser.add_argument("gpus", type=float, default=0.1)
@@ -10,15 +11,15 @@ parser.add_argument("gpus", type=float, default=0.1)
 
 def main():
     args = parser.parse_args()
-    method, gpus = args.method, args.gpus
-    exp_dir = get_exp_dir(method)
+    user_id, method, gpus = args.user_id, args.method, args.gpus
+    exp_dir = get_exp_dir(user_id, method)
     if "m" in args.phase:
         ray.init(address="auto", ignore_reinit_error=True)
-        config = get_hparams_config(method)
+        config = get_hparams_config(user_id, method)
         design.run("model_selection", exp_dir, config, gpus_per_trial=gpus)
     if "r" in args.phase:
         ray.init(address="auto", ignore_reinit_error=True)
-        mode = "min" if not True else "max"
+        mode = "min" if True else "max"
         config = get_analysis("model_selection", exp_dir, mode).get_best_config()
         design.run("retraining", exp_dir, config, gpus_per_trial=gpus)
 

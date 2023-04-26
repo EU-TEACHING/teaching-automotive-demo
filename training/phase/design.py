@@ -15,21 +15,24 @@ def run(
 
     reporter = tune.CLIReporter(
         metric_columns={
-            "train_score": "TR-Score",
-            "eval_score": "VL-Score",
-            "test_score": "TS-Score",
+            # "train_score": "TR-Score",
+            # "eval_score": "VL-Score",
+            # "test_score": "TS-Score",
             "train_accuracy": "TR-Acc",
             "eval_accuracy": "VL-Acc",
             "test_accuracy": "TS-Acc",
+            "train_loss": "TR-Loss",
+            "eval_loss": "VL-Loss",
+            "test_loss": "TS-Loss",
         },
         infer_limit=3,
-        metric="eval_score",
-        mode="max",
+        metric="eval_loss",
+        mode="min",
     )
 
     resources = {"cpu": 1, "gpu": gpus_per_trial}
     config["phase"] = phase
-    num_samples = 5000 if phase == "model_selection" else 100
+    num_samples = 700 if phase == "model_selection" else 100
 
     stopper = lambda trial_id, result: True
 
@@ -43,7 +46,8 @@ def run(
             stop=stopper,
             checkpoint_config=air.CheckpointConfig(
                 num_to_keep=1,
-                checkpoint_score_attribute="eval_score",
+                checkpoint_score_order="min",
+                checkpoint_score_attribute="eval_loss",
                 checkpoint_frequency=1,
             ),
             verbose=1,

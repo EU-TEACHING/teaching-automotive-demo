@@ -19,10 +19,12 @@ def preprocess_fn(reservoir: Reservoir, aggregation: str = "mean"):
 
 
 def accuracy_fn(y_true: torch.Tensor, y_pred: torch.Tensor) -> float:
-    return torch.sum(torch.clamp(torch.round(y_pred), 0, 1) == y_true) / y_pred.shape[0]
+    y_pred = torch.clamp(torch.round(y_pred), 0, 1)
+    y_true = torch.clamp(torch.round(y_true), 0, 1)
+    return torch.sum(y_pred == y_true) / y_pred.shape[0]
 
 
 def f1_fn(y_true: torch.Tensor, y_pred: torch.Tensor) -> float:
     y_pred = torch.clamp(torch.round(y_pred), 0, 1).numpy()
-    y_true = y_true.numpy()
+    y_true = torch.clamp(torch.round(y_true), 0, 1).numpy()
     return f1_score(y_true, y_pred)

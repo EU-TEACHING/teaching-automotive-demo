@@ -1,3 +1,4 @@
+import os
 from typing import List, Literal, Optional
 import pandas as pd
 import numpy as np
@@ -6,52 +7,76 @@ import torch
 from scipy.stats import zscore
 from sklearn.model_selection import train_test_split
 
-DATA_DIR = "../stress_preprocessor/data/processed"
+DATA_DIR = "/raid/decaro/datasets/processed/AVLStudy"
+SCENARIOS = [3, 4, 5, 6, 7, 8, 9, 10, 11]
 STRESS_QUEST = [f"S{i}M1Q8" for i in range(1, 7)]
 
 
 class AVLDataset(torch.utils.data.Dataset):
-    def __init__(self, user_id: str, scenario_ids: List[str], maneuvre_ids: List[str]):
+    SCENARIOS = {
+        "all": [3, 4, 5, 6, 7, 8, 9, 10, 11],
+        "train": [3, 4, 5, 6, 8, 9],
+        "eval": [7, 10],
+        "test": [11],
+    }
+
+    def __init__(
+        self,
+        user_id: str,
+        split: str,
+        columns: Literal["", "_diff"],
+        norm: Literal["baseline", "sequence"],
+    ):
         self.user_id = user_id
-        self.scenario_ids = scenario_ids
-        self.maneuvre_ids = maneuvre_ids
+        self.scenario_ids = AVLDataset.SCENARIOS[split]
+        self.norm = norm
+        self.columns = ["EDA_Clean" + columns, "ECG_Rate"]
         self.user_path = f"{DATA_DIR}/SUBJ_{user_id}/"
 
-        ft_path = self.user_path + f"SUBJ_{user_id}_ALL_SCENARIOS.csv"
-        self.features = pd.read_csv(ft_path, sep=";")
+        ft_path = os.path.join(self.user_path, f"SUBJ_{user_id}_ALL_SCENARIOS.csv")
+        self.features = pd.read_csv(ft_path)
         self.features = self.features[
-            ["ScenarioID", "ManeuvreID", "EDA_clean", "ECG_rate", "Slider_value"]
+            [
+                "Time",
+                "ScenarioID",
+                "Slider_value",
+            ]
+            + self.columns
+        ]
+        self.features = self.features.loc[
+            (self.features[[self.columns]] != 0).any(axis=1)
         ]
         self.preprocess()
 
     def __len__(self):
-        return len(self.scenario_ids) * len(self.maneuvre_ids)
+        return len(self.scenario_ids)
 
     def __getitem__(self, idx):
-        scenario_id = idx // len(self.maneuvre_ids)
-        maneuvre_id = idx % len(self.maneuvre_ids)
-        scenario_id = self.scenario_ids[scenario_id]
-        maneuvre_id = self.maneuvre_ids[maneuvre_id]
-        features = self.features[
+        scenario_data = self.features[
             (self.features["ScenarioID"] == self.scenario_ids[idx])
-            & (self.features["ManeuvreID"] == self.maneuvre_ids[idx])
         ]
 
-        features = features[["EDA_clean", "ECG_rate"]].values
-        target = features["Slider_value"].values
+        features = scenario_data[self.columns].values
+        if self.norm == "sequence":
+            features = (features - np.mean(features)) / np.std(features)
+        target = scenario_data["Slider_value"].values
 
         return torch.tensor(features, dtype=torch.float), torch.tensor(
             target, dtype=torch.float
-        )
+        ).unsqueeze(1)
 
     def preprocess(self):
-        bs_path = self.user_path + f"SUBJ_{self.user_id}_SCEN_00_MODE_FreeDriving.csv"
-        baseline = pd.read_csv(bs_path, sep=";")
-        baseline = baseline[["EDA_clean", "ECG_rate"]]
-        baseline = baseline.values
+        if self.norm == "baseline":
+            bs_path = os.path.join(
+                self.user_path, f"SUBJ_{self.user_id}_SCEN_00_MODE_FreeDriving.csv"
+            )
+            baseline = pd.read_csv(bs_path)
+            baseline = baseline[self.columns]
+            baseline = baseline.values
 
-        mean, std = np.mean(baseline, axis=0), np.std(baseline, axis=0)
-        self.features["EDA_clean", "ECG_rate"] = (self.features - mean) / std
+            mean, std = np.mean(baseline, axis=0), np.std(baseline, axis=0)
+            self.features[self.columns] = (self.features[self.columns] - mean) / std
+        self.features["Slider_value"] /= self.features["Slider_value"].max()
 
 
 class AVLDatasetV1(torch.utils.data.Dataset):
