@@ -14,10 +14,18 @@ from stress_preprocessor.utils.visualization_utils import plot_timeseries_raw
 
 
 class StressPreprocessor:
-    def __init__(self, config):
+    def __init__(self, config, online: bool = False, **kwargs):
         self.subj_id = None
         self.config = config
         self.logger = logging.getLogger(__name__)
+        if online:
+            self.baseline_path = kwargs["baseline_path"]
+            baseline_data = pd.read_csv(self.baseline_path, header=1)
+            baseline_data = baseline_data.drop(0)
+            self.last_timestamp = float((baseline_data['Time'].iloc[-1]))
+            self.window = baseline_data.to_dict("records")[-kwargs["buffer_size"]:]
+            self.last_returned = len(self.window)
+            self.preprocessor = StressPreprocessor(self.config)
 
     def float_to_integer(self, dfs):
         formatted_types_dfs = []
@@ -134,6 +142,7 @@ class StressPreprocessor:
                         self.config.target_col: 'float32', self.config.error_col: 'float32',
                         self.config.scenario_col: 'float32', self.config.mode_col: 'float32',
                         self.config.participant_col: 'float32'})
+        df.reset_index(inplace=True, drop=True)
         return [df]
 
     def clean_and_validate(self, baseline_df_list, dfs: List[pd.DataFrame]) -> [List[pd.DataFrame], List[pd.DataFrame]]:
@@ -293,13 +302,28 @@ class StressPreprocessor:
 
         self.save_preprocessed_data(new_feats_baseline_df_list, new_feats_dfs, subj_id)
 
-    def online_run(self, array: np.ndarray, subj_id) -> pd.DataFrame:
+    def online_run(self, stream_dict: dict) -> np.array:
         start = time.time()
-        dfs = self.load_data_online(array)
-        _, prep_dfs = self.clean_and_validate(None, dfs)
-        prep_dfs = self.float_to_integer(prep_dfs)
-        new_feats_dfs = self.extract_features(prep_dfs, offline=False)  # Using offline=False to indicate this is online
+        stream_dict["Time"] = float(stream_dict["Time"]) + self.last_timestamp
+        stream_dict["ErrorCount"] = 0
+        stream_dict["ScenarioID"] = 0
+        stream_dict["Maneuvre_ID"] = 0
+        stream_dict["Subject_ID"] = 0
+        self.window.append(stream_dict)
+        self.window = self.window[1:]
+        self.last_returned -= 1
+        print(f"last_returned: {self.last_returned}")
+        if self.last_returned <= len(self.window) - 100:
+            dfs = self.load_data_online(self.window)
+            _, prep_dfs = self.clean_and_validate(None, dfs)
+            prep_dfs = self.float_to_integer(prep_dfs)
+            proc_df = self.extract_features(prep_dfs, offline=False)[0]
+            eda = proc_df["EDA_Clean"].values
+            ecg = proc_df["ECG_Rate"].values
+            to_return = np.stack([eda, ecg], axis=1)
+            to_return = to_return[self.last_returned:]
+            self.last_returned = len(self.window)
+            print(f"length: {len(to_return)}")
+            return to_return
         stop = time.time()
         logging.info(f"Overall latency (secs): {stop - start}")
-
-        return new_feats_dfs[0]
