@@ -139,6 +139,9 @@ class StressPreprocessor:
                     filepath
                 )  # , header=1) # Commented after manual cleaning
                 # df = df.drop(0) # Commented after manual cleaning
+
+                if self.config.error_col not in df.columns:
+                    df[self.config.error_col] = 0
                 df = df[
                     [
                         self.config.time_col,
