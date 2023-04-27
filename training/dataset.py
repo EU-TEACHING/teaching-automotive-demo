@@ -1,6 +1,10 @@
-import os
+import os, warnings
+
+warnings.filterwarnings(action="ignore")
+
 from typing import List, Literal, Optional
 import pandas as pd
+
 import numpy as np
 import torch
 
@@ -8,29 +12,31 @@ from scipy.stats import zscore
 from sklearn.model_selection import train_test_split
 
 DATA_DIR = "/raid/decaro/datasets/processed/AVLStudy"
-SCENARIOS = [3, 4, 5, 6, 7, 8, 9, 10, 11]
+SCENARIOS = [i for i in range(1, 12)]
 STRESS_QUEST = [f"S{i}M1Q8" for i in range(1, 7)]
 
 
 class AVLDataset(torch.utils.data.Dataset):
     SCENARIOS = {
-        "all": [3, 4, 5, 6, 7, 8, 9, 10, 11],
-        "train": [3, 4, 5, 6, 8, 9],
-        "eval": [7, 10],
-        "test": [11],
+        "all": [i for i in range(1, 12)],
+        "train": [3, 5, 6, 7, 11, 10],
+        "eval": [4, 8, 9],
+        "test": [1, 2],
     }
 
     def __init__(
         self,
         user_id: str,
         split: str,
-        columns: Literal["", "_diff"],
+        columns: List[str],
         norm: Literal["baseline", "sequence"],
+        classification: bool,
     ):
         self.user_id = user_id
         self.scenario_ids = AVLDataset.SCENARIOS[split]
         self.norm = norm
-        self.columns = ["EDA_Clean" + columns, "ECG_Rate"]
+        self.columns = columns
+        self.classification = classification
         self.user_path = f"{DATA_DIR}/SUBJ_{user_id}/"
 
         ft_path = os.path.join(self.user_path, f"SUBJ_{user_id}_ALL_SCENARIOS.csv")
@@ -43,9 +49,6 @@ class AVLDataset(torch.utils.data.Dataset):
             ]
             + self.columns
         ]
-        self.features = self.features.loc[
-            (self.features[[self.columns]] != 0).any(axis=1)
-        ]
         self.preprocess()
 
     def __len__(self):
@@ -56,27 +59,61 @@ class AVLDataset(torch.utils.data.Dataset):
             (self.features["ScenarioID"] == self.scenario_ids[idx])
         ]
 
-        features = scenario_data[self.columns].values
         if self.norm == "sequence":
             features = (features - np.mean(features)) / np.std(features)
-        target = scenario_data["Slider_value"].values
+
+        scenario_data = scenario_data.iloc[50:]
+        features = scenario_data[self.columns].values
+
+        if self.classification:
+            target = scenario_data["stressed"].values
+        else:
+            target = scenario_data["Slider_value"].values
 
         return torch.tensor(features, dtype=torch.float), torch.tensor(
             target, dtype=torch.float
         ).unsqueeze(1)
 
     def preprocess(self):
+        self.features["Slider_value"] /= 1024
         if self.norm == "baseline":
             bs_path = os.path.join(
                 self.user_path, f"SUBJ_{self.user_id}_SCEN_00_MODE_FreeDriving.csv"
             )
-            baseline = pd.read_csv(bs_path)
+            baseline = pd.read_csv(bs_path).iloc[50:]
             baseline = baseline[self.columns]
             baseline = baseline.values
 
             mean, std = np.mean(baseline, axis=0), np.std(baseline, axis=0)
             self.features[self.columns] = (self.features[self.columns] - mean) / std
-        self.features["Slider_value"] /= self.features["Slider_value"].max()
+        # if self.classification:
+        #     for i in self.scenario_ids:
+        #         scenario_data = self.features[self.features["ScenarioID"] == i]
+        #         scenario_data["slider_diff"] = scenario_data["Slider_value"].diff()
+        #         scenario_data["slider_diff"].iloc[:2] = scenario_data[
+        #             "slider_diff"
+        #         ].iloc[2]
+        #         scenario_data["slider_diff_rolling_sum"] = (
+        #             scenario_data["slider_diff"].rolling(500).sum()
+        #         )
+        #         scenario_data["stressed"] = scenario_data.apply(to_class, axis=1)
+        #         scenario_data["stressed"].iloc[0] = 0
+
+        #         scenario_data["stressed"] = scenario_data["stressed"].fillna(
+        #             method="ffill"
+        #         )
+        #         self.features.loc[
+        #             self.features["ScenarioID"] == i, "stressed"
+        #         ] = scenario_data["stressed"].values
+
+
+def to_class(x):
+    if x["slider_diff_rolling_sum"] > 0.05:
+        return 1
+    elif x["slider_diff_rolling_sum"] < -0.05:
+        return 0
+    else:
+        return np.NaN
 
 
 class AVLDatasetV1(torch.utils.data.Dataset):

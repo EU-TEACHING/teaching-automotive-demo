@@ -18,7 +18,9 @@
     "s2_comfort": "Scenario_02.SUBJ_XX.Scenario02_Comfort/DATA_OUT_in.csv",
     "s3_eco": "Scenario_03.SUBJ_XX.Scenario03_Eco/DATA_OUT_in.csv",
     "s3_sport": "Scenario_03.SUBJ_XX.Scenario03_Sport/DATA_OUT_in.csv",
-    "s3_comfort": "Scenario_03.SUBJ_XX.Scenario03_Comfort/DATA_OUT_in.csv"
+    "s3_comfort": "Scenario_03.SUBJ_XX.Scenario03_Comfort/DATA_OUT_in.csv",
+    "sx_eco": "Scenario_X.SUBJ_XX.ScenarioX_Eco/DATA_OUT_in.csv",
+    "sx_sport": "Scenario_X.SUBJ_XX.ScenarioX_Sport/DATA_OUT_in.csv"
   },
   "scenario_ids": {
     "0": "baseline",

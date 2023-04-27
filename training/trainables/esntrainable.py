@@ -14,35 +14,41 @@ from typing import Dict, Optional, Union
 
 class ESNTrainable(tune.Trainable):
     def setup(self, config: Dict):
-        self.train_data, self.eval_data, self.test_data = (
+        self.model, self.states = None, None
+
+    def step(self):
+        config = self.get_config()
+        train_data, eval_data, test_data = (
             AVLDataset(split="train", **config["data"]),
             AVLDataset(split="eval", **config["data"]),
             AVLDataset(split="test", **config["data"]),
         )
-        self.train_loader = torch.utils.data.DataLoader(
-            self.train_data, batch_size=1, shuffle=False, collate_fn=seq_collate_fn()
+        train_loader = torch.utils.data.DataLoader(
+            train_data, batch_size=1, shuffle=False, collate_fn=seq_collate_fn()
         )
-        self.eval_loader = torch.utils.data.DataLoader(
-            self.eval_data, batch_size=1, shuffle=False, collate_fn=seq_collate_fn()
+        eval_loader = torch.utils.data.DataLoader(
+            eval_data, batch_size=1, shuffle=False, collate_fn=seq_collate_fn()
         )
-        self.test_loader = torch.utils.data.DataLoader(
-            self.test_data, batch_size=1, shuffle=False, collate_fn=seq_collate_fn()
+        test_loader = torch.utils.data.DataLoader(
+            test_data, batch_size=1, shuffle=False, collate_fn=seq_collate_fn()
         )
-        self.wrapper = ESNWrapper()
-        self.model, self.states = None, None
-
-    def step(self):
+        wrapper = ESNWrapper()
         cfg = self.get_config()
+
         model = {"reservoir": Reservoir(**cfg["reservoir"])}
-        loss = torch.nn.MSELoss()
+        if cfg["data"]["classification"]:
+            loss = torch.nn.BCEWithLogitsLoss()
+        else:
+            loss = torch.nn.MSELoss()
+
         if "ip" in cfg["method"]:
-            model["reservoir"] = self.wrapper.ip_step(
-                self.train_loader, model["reservoir"], **cfg["ip"]
+            model["reservoir"] = wrapper.ip_step(
+                train_loader, model["reservoir"], **cfg["ip"]
             ).eval()
 
         model["readout"], model["l2"], _ = fit_and_validate_readout(
-            self.train_loader,
-            self.eval_loader,
+            train_loader,
+            eval_loader,
             l2_values=cfg["l2"],
             weights=cfg["weights"] if "weights" in cfg else None,
             score_fn=loss,
@@ -50,15 +56,12 @@ class ESNTrainable(tune.Trainable):
             preprocess_fn=model["reservoir"],
             device="cuda" if torch.cuda.is_available() else "cpu",
         )
-        f1_train, acc_train, loss_train = score_model(self.train_loader, model)
-        f1_eval, acc_eval, loss_eval = score_model(self.eval_loader, model)
-        f1_test, acc_test, loss_test = score_model(self.test_loader, model)
+        acc_train, loss_train = score_model(train_loader, model)
+        acc_eval, loss_eval = score_model(eval_loader, model)
+        acc_test, loss_test = score_model(test_loader, model)
 
         self.model = model
         return {
-            # "train_score": f1_train,
-            # "eval_score": f1_eval,
-            # "test_score": f1_test,
             "train_accuracy": acc_train,
             "eval_accuracy": acc_eval,
             "test_accuracy": acc_test,
@@ -81,7 +84,7 @@ class ESNTrainable(tune.Trainable):
 
 @torch.no_grad()
 def score_model(loader: torch.utils.data.DataLoader, model: Dict):
-    f1, acc, mse, n_samples = 0, 0, 0, 0
+    acc, mse, n_samples = 0, 0, 0
     mse_loss = torch.nn.MSELoss()
     for x, y in loader:
         x = x.to("cuda" if torch.cuda.is_available() else "cpu")
@@ -89,9 +92,7 @@ def score_model(loader: torch.utils.data.DataLoader, model: Dict):
         x = model["reservoir"](x)
         y_pred = F.linear(x.to(model["readout"]), model["readout"])
         y, y_pred = y.squeeze(), y_pred.squeeze()
-        f1_b, acc_b, mse_b = (
-            0,
-            # f1_fn(y, y_pred),
+        acc_b, mse_b = (
             accuracy_fn(y, y_pred),
             mse_loss(y, y_pred),
         )
@@ -100,4 +101,4 @@ def score_model(loader: torch.utils.data.DataLoader, model: Dict):
         mse += mse_b * y.shape[0]
         n_samples += y.shape[0]
     # return (f1 / n_samples).item(), (acc / n_samples).item(), (mse / n_samples).item()
-    return 0, (acc / n_samples).item(), (mse / n_samples).item()
+    return (acc / n_samples).item(), (mse / n_samples).item()
