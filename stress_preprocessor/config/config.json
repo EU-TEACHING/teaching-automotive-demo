@@ -1,16 +1,65 @@
 {
-  "baseline_subpath": "Scenario_00.SUBJ_XX.Scenario00_FreeDriving/results/mcx/DATA_OUT_in.csv",
-  "subpaths": {
-    "s1_eco": "Scenario_01.SUBJ_XX.Scenario01_Eco/results/mcx/DATA_OUT_in.csv",
-    "s1_sport": "Scenario_01.SUBJ_XX.Scenario01_Sport/results/mcx/DATA_OUT_in.csv",
-    "s1_comfort": "Scenario_01.SUBJ_XX.Scenario01_Comfort/results/mcx/DATA_OUT_in.csv",
-    "s2_eco": "Scenario_02.SUBJ_XX.Scenario02_Eco/results/mcx/DATA_OUT_in.csv",
-    "s2_sport": "Scenario_02.SUBJ_XX.Scenario02_Sport/results/mcx/DATA_OUT_in.csv",
-    "s2_comfort": "Scenario_02.SUBJ_XX.Scenario02_Comfort/results/mcx/DATA_OUT_in.csv",
-    "s3_eco": "Scenario_03.SUBJ_XX.Scenario03_Eco/results/mcx/DATA_OUT_in.csv",
-    "s3_sport": "Scenario_03.SUBJ_XX.Scenario03_Sport/results/mcx/DATA_OUT_in.csv",
-    "s3_comfort": "Scenario_03.SUBJ_XX.Scenario03_Comfort/results/mcx/DATA_OUT_in.csv"
+  "baseline_subpath": {
+    "baseline_subpath": "Scenario00.SUBJ_XX.Scenario00_FreeDriving/DATA_OUT_in.csv"
   },
+  "scenario_6_subpath": {
+    "scenario_6_subpath": "Scenario_06.SUBJ_XX.Scenario06_AI/DATA_OUT_in.csv"
+  },
+  "scenario_X_subpaths": {
+    "sX_eco": "Scenario_X.SUBJ_XX.ScenarioX_Eco/DATA_OUT_in.csv",
+    "sX_sport": "Scenario_X.SUBJ_XX.ScenarioX_Sport/DATA_OUT_in.csv"
+  },
+  "subpaths": {
+    "s1_eco": "Scenario_01.SUBJ_XX.Scenario01_Eco/DATA_OUT_in.csv",
+    "s1_sport": "Scenario_01.SUBJ_XX.Scenario01_Sport/DATA_OUT_in.csv",
+    "s1_comfort": "Scenario_01.SUBJ_XX.Scenario01_Comfort/DATA_OUT_in.csv",
+    "s2_eco": "Scenario_02.SUBJ_XX.Scenario02_Eco/DATA_OUT_in.csv",
+    "s2_sport": "Scenario_02.SUBJ_XX.Scenario02_Sport/DATA_OUT_in.csv",
+    "s2_comfort": "Scenario_02.SUBJ_XX.Scenario02_Comfort/DATA_OUT_in.csv",
+    "s3_eco": "Scenario_03.SUBJ_XX.Scenario03_Eco/DATA_OUT_in.csv",
+    "s3_sport": "Scenario_03.SUBJ_XX.Scenario03_Sport/DATA_OUT_in.csv",
+    "s3_comfort": "Scenario_03.SUBJ_XX.Scenario03_Comfort/DATA_OUT_in.csv"
+  },
+  "scenario_ids": {
+    "0": "baseline",
+    "1": "X",
+    "2": "X",
+    "3": 1,
+    "4": 1,
+    "5": 1,
+    "6": 2,
+    "7": 2,
+    "8": 2,
+    "9": 3,
+    "10": 3,
+    "11": 3,
+    "12": 6
+  },
+  "stress_events": {
+            "1": {
+                "accelerate_to_motorway": [[65, 75]],
+                "cut_in_from_another_vehicle": [[87, 97]],
+                "sharp_brake": [[93, 103]]},
+            "2": {
+                "join_platoon": [[38, 48]],
+                "platooning": [[70, 80], [88, 147]],
+                "platoon_vehicle_cut_out": [[77, 87]]},
+            "3": {
+                "traffic_light_sharp_break": [[33, 53]],
+                "phantom_break": [[72, 92]],
+                "road_crossing": [[103, 123]]},
+            "6": {
+                "traffic_light": [[39, 49], [104, 114],
+                                  [133, 143], [203, 213]],
+                "phantom_break": [[66, 76], [176, 186]],
+                "pedestrian_crossing": [78, 88],
+                "cut_in_from_a_vehicle": [[308, 318], [533, 543]],
+                "join_platoon_at_motorway": [[655, 665]],
+                "platoon_vehicle_cutting_out": [[661, 671], [677, 687]]},
+            "X": {"traffic_light_slow_down": [[20, 30]],
+                  "pedestrian_crossing": [[59, 69]]}
+        },
+  "stress_events_secs": 3,
   "target_col": "Slider_value",
   "scenario_col": "ScenarioID",
   "mode_col": "Maneuvre_ID",
@@ -21,9 +70,9 @@
   "error_col": "ErrorCount",
   "sampling_rate_hz": 100,
   "modes": {
-    "0": "Eco",
-    "1": "Comfort",
-    "2": "Sport"
+    "1": "Eco",
+    "2": "Comfort",
+    "3": "Sport"
   },
   "fod_feats": [
     "ECG_Raw",
@@ -32,9 +81,19 @@
     "EDA_Clean"
   ],
   "graph_path": "stress_preprocessor/graphs",
+  "raw_data_with_stress_events_path": "stress_preprocessor/data/raw_with_stress_events",
   "processed_data_path": "stress_preprocessor/data/processed",
   "save_single_df": true,
   "online": {
-    "array_schema": ["Time", "ECG", "GSR", "Slider_value", "ErrorCount", "ScenarioID", "Maneuvre_ID", "Subject_ID"]
+    "array_schema": [
+      "Time",
+      "ECG",
+      "GSR",
+      "Slider_value",
+      "ErrorCount",
+      "ScenarioID",
+      "Maneuvre_ID",
+      "Subject_ID"
+    ]
   }
 }
