@@ -2,9 +2,64 @@ from decimal import Decimal
 import logging
 from typing import List
 
+import os
 import numpy as np
 import pandas as pd
+import datetime
 
+
+def float_to_integer(dfs, config):
+    formatted_types_dfs = []
+    for df in dfs:
+        try:
+            df = df.astype({config.error_col: 'Int32', config.scenario_col: 'Int32',
+                            config.mode_col: 'Int32', config.participant_col: 'Int32'})
+        except Exception as e:
+            df = df.astype({config.scenario_col: 'Int32', config.mode_col: 'Int32',
+                            config.participant_col: 'Int32'})
+        df.reset_index(inplace=True, drop=True)
+        formatted_types_dfs.append(df)
+    return formatted_types_dfs
+
+
+def load_csv_files(dfs, subpaths, subj_id, subj_path, config):
+    for key, filename in subpaths.items():
+        filename = filename.replace("SUBJ_XX", f"SUBJ_{subj_id}")
+        filepath = os.path.join(subj_path, filename)
+
+        # Check if the file exists
+        if not os.path.exists(filepath):
+            logging.warning(f"File not found: {filepath}")
+            continue
+
+        try:
+            try:
+                df = pd.read_csv(filepath, header=1)
+                df = df.drop(0)
+                df = df[[config.time_col, config.ecg_col, config.gsr_col,
+                         config.target_col, config.scenario_col,
+                         config.mode_col, config.participant_col]]
+            except Exception as e:
+                df = pd.read_csv(filepath)
+                df = df.drop(0)
+                df = df[[config.time_col, config.ecg_col, config.gsr_col,
+                         config.target_col, config.scenario_col,
+                         config.mode_col, config.participant_col]]
+            df = df.astype({config.time_col: 'float32', config.ecg_col: 'float32',
+                            config.gsr_col: 'float32', config.target_col: 'float32',
+                            config.scenario_col: 'float32',
+                            config.mode_col: 'float32', config.participant_col: 'float32'})
+            df.reset_index(inplace=True, drop=True)
+
+            dfs.append(df)
+            dfs = float_to_integer(dfs, config)
+            logging.info(f"Successfully loaded {filepath}")
+
+        except Exception as e:
+            logging.error(f"Error loading file: {filepath}\n{str(e)}")
+            continue
+
+    return dfs
 
 # Define a function to round a value to 2 decimal points
 def round_decimal(val):
@@ -464,3 +519,24 @@ def mapper(stream_dict):
             updated_d[key] = value
 
     return updated_d
+
+
+def is_in_time_interval(x: str, items) -> str:
+    """Function that assigns the stress events if a given value is in the given time interval.
+
+        Args:
+            x: The time value in seconds to check.
+            items: Dictionary that contains the stress events and the time intervals they occur.
+
+        Returns:
+            The corresponding stress event.
+
+        """
+    for sid, list_timings in items:
+        for timings in list_timings:
+            if float(timings[0]) <= float(x) < float(timings[1]):
+                return sid
+            else:
+                continue
+    return "normal"
+
