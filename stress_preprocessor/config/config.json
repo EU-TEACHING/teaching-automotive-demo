@@ -11,7 +11,6 @@
     "s3_sport": "Scenario_03.SUBJ_XX.Scenario03_Sport/DATA_OUT_in.csv",
     "s3_comfort": "Scenario_03.SUBJ_XX.Scenario03_Comfort/DATA_OUT_in.csv",
     "sx_eco": "Scenario_X.SUBJ_XX.ScenarioX_Eco/DATA_OUT_in.csv",
-    "sx_sport": "Scenario_X.SUBJ_XX.ScenarioX_Sport/DATA_OUT_in.csv"
   },
   "target_col": "Slider_value",
   "scenario_col": "ScenarioID",
@@ -34,7 +33,7 @@
     "EDA_Clean"
   ],
   "graph_path": "stress_preprocessor/graphs",
-  "processed_data_path": "/raid/decaro/datasets/processed/AVLStudy",
+  "processed_data_path": "/raid/decaro/datasets/processed/AVLStudy2",
   "save_single_df": true,
   "online": {
     "array_schema": [
