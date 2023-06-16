@@ -10,7 +10,7 @@ from stress_preprocessor.preprocessors.preprocessor import StressPreprocessor
 def main(subj_id):
     config = Config("stress_preprocessor/config/config.json")
 
-    subject_path = f"/raid/decaro/datasets/raw/AVLStudy"
+    subject_path = f"/raid/decaro/datasets/raw/AVLStudy2"
     subpaths = config.subpaths
     baseline_subpath = config.baseline_subpath
     scenario_6_subpath = config.scenario_6_subpath

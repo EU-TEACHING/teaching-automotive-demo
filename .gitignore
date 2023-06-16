@@ -133,3 +133,4 @@ dmypy.json
 .vscode
 
 stress_preprocessor/graphs
+analyses
