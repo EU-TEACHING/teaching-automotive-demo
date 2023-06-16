@@ -13,9 +13,18 @@ def main(subj_id):
     subject_path = f"/raid/decaro/datasets/raw/AVLStudy2"
     subpaths = config.subpaths
     baseline_subpath = config.baseline_subpath
+    scenario_6_subpath = config.scenario_6_subpath
+    scenario_X_subpaths = config.scenario_X_subpaths
 
     preprocessor = StressPreprocessor(config)
-    preprocessor.run(subpaths, baseline_subpath, subject_path, subj_id)
+    preprocessor.run(
+        subpaths,
+        baseline_subpath,
+        scenario_6_subpath,
+        scenario_X_subpaths,
+        subject_path,
+        subj_id,
+    )
 
 
 if __name__ == "__main__":

@@ -15,8 +15,48 @@ Run the offline preprocessor:
 python offline_preprocess_run.py -sid [subj_id]
 ```
 
+#### Steps
+- load the datasets
+- assign the stress events
+- save the new datasets
+- clean and validate timestamps
+- features extraction using neurokit
+- save preprocessed datasets
+
 The -sid option is required and specifies the participant's ID.
 
+### Stress Events
+During the offline preprocessing after the datasets are loaded, stress
+events are being assigned to them and then are saved into csv files.
+
+The stress events are:
+```python
+"1": {
+    "accelerate_to_motorway": [[65, 75]],
+    "cut_in_from_another_vehicle": [[87, 97]],
+    "sharp_brake": [[93, 103]]},
+"2": {
+    "join_platoon": [[38, 48]],
+    "platooning": [[70, 80], [88, 147]],
+    "platoon_vehicle_cut_out": [[77, 87]]},
+"3": {
+    "traffic_light_sharp_break": [[33, 53]],
+    "phantom_break": [[72, 92]],
+    "road_crossing": [[103, 123]]},
+"6": {
+    "traffic_light": [[39, 49], [104, 114],
+                      [133, 143], [203, 213]],
+    "phantom_break": [[66, 76], [176, 186]],
+    "pedestrian_crossing": [78, 88],
+    "cut_in_from_a_vehicle": [[308, 318], [533, 543]],
+    "join_platoon_at_motorway": [[655, 665]],
+    "platoon_vehicle_cutting_out": [[661, 671], [677, 687]]},
+"X": {"traffic_light_slow_down": [[20, 30]],
+      "pedestrian_crossing": [[59, 69]]}
+}
+```
+For the timings that no stress event is happening the value is "normal".
+For the baseline dataset there are no stress events, the Stress_Events column is None.
 
 ### Extracted features
 

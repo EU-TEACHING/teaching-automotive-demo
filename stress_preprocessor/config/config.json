@@ -1,5 +1,14 @@
 {
-  "baseline_subpath": "Scenario00.SUBJ_XX.Scenario00_FreeDriving/DATA_OUT_in.csv",
+  "baseline_subpath": {
+    "baseline_subpath": "Scenario00.SUBJ_XX.Scenario00_FreeDriving/DATA_OUT_in.csv"
+  },
+  "scenario_6_subpath": {
+    "scenario_6_subpath": "Scenario_06.SUBJ_XX.Scenario06_AI/DATA_OUT_in.csv"
+  },
+  "scenario_X_subpaths": {
+    "sX_eco": "Scenario_X.SUBJ_XX.ScenarioX_Eco/DATA_OUT_in.csv",
+    "sX_sport": "Scenario_X.SUBJ_XX.ScenarioX_Sport/DATA_OUT_in.csv"
+  },
   "subpaths": {
     "s1_eco": "Scenario_01.SUBJ_XX.Scenario01_Eco/DATA_OUT_in.csv",
     "s1_sport": "Scenario_01.SUBJ_XX.Scenario01_Sport/DATA_OUT_in.csv",
@@ -9,9 +18,48 @@
     "s2_comfort": "Scenario_02.SUBJ_XX.Scenario02_Comfort/DATA_OUT_in.csv",
     "s3_eco": "Scenario_03.SUBJ_XX.Scenario03_Eco/DATA_OUT_in.csv",
     "s3_sport": "Scenario_03.SUBJ_XX.Scenario03_Sport/DATA_OUT_in.csv",
-    "s3_comfort": "Scenario_03.SUBJ_XX.Scenario03_Comfort/DATA_OUT_in.csv",
-    "sx_eco": "Scenario_X.SUBJ_XX.ScenarioX_Eco/DATA_OUT_in.csv",
+    "s3_comfort": "Scenario_03.SUBJ_XX.Scenario03_Comfort/DATA_OUT_in.csv"
   },
+  "scenario_ids": {
+    "0": "baseline",
+    "1": "X",
+    "2": "X",
+    "3": 1,
+    "4": 1,
+    "5": 1,
+    "6": 2,
+    "7": 2,
+    "8": 2,
+    "9": 3,
+    "10": 3,
+    "11": 3,
+    "12": 6
+  },
+  "stress_events": {
+            "1": {
+                "accelerate_to_motorway": [[65.0, 75.0]],
+                "cut_in_from_another_vehicle": [[87.0, 97.0]],
+                "sharp_brake": [[93.0, 103.0]]},
+            "2": {
+                "join_platoon": [[38.0, 48.0]],
+                "platooning": [[70.0, 80.0], [88.0, 147.0]],
+                "platoon_vehicle_cut_out": [[77.0, 87.0]]},
+            "3": {
+                "traffic_light_sharp_break": [[33.0, 53.0]],
+                "phantom_break": [[72.0, 92.0]],
+                "road_crossing": [[103.0, 123.0]]},
+            "6": {
+                "traffic_light": [[39.0, 49.0], [104.0, 114.0],
+                                  [133.0, 143.0], [203.0, 213.0]],
+                "phantom_break": [[66.0, 76.0], [176.0, 186.0]],
+                "pedestrian_crossing": [[78.0, 88.0]],
+                "cut_in_from_a_vehicle": [[308.0, 318.0], [533.0, 543.0]],
+                "join_platoon_at_motorway": [[655, 665]],
+                "platoon_vehicle_cutting_out": [[661.0, 671.0], [677.0, 687.0]]},
+            "X": {"traffic_light_slow_down": [[20.0, 30.0]],
+                  "pedestrian_crossing": [[59.0, 69.0]]}
+        },
+  "stress_events_secs": 3,
   "target_col": "Slider_value",
   "scenario_col": "ScenarioID",
   "mode_col": "Maneuvre_ID",
@@ -33,7 +81,8 @@
     "EDA_Clean"
   ],
   "graph_path": "stress_preprocessor/graphs",
-  "processed_data_path": "/raid/decaro/datasets/processed/AVLStudy2",
+  "raw_data_with_stress_events_path": "stress_preprocessor/data/raw_with_stress_events",
+  "processed_data_path": "stress_preprocessor/data/processed",
   "save_single_df": true,
   "online": {
     "array_schema": [
