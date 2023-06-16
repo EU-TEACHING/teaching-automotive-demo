@@ -4,7 +4,7 @@ import os
 import numpy as np
 import pandas as pd
 import time
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from pandas import DataFrame
 import warnings
 
@@ -47,7 +47,7 @@ class StressPreprocessor:
         scenario_X_subpaths: Dict[str, str],
         subj_path: str,
         subj_id: str,
-    ) -> [List[pd.DataFrame], List[pd.DataFrame]]:
+    ) -> Tuple[List[pd.DataFrame], List[pd.DataFrame]]:
         """
         Offline Load data from a subject's directory into a list of pandas DataFrames.
 
@@ -131,7 +131,7 @@ class StressPreprocessor:
         scenario_6_dfs: List[DataFrame],
         scenario_X_dfs: List[DataFrame],
         dfs: List[DataFrame],
-    ) -> [
+    ) -> Tuple[
         List[pd.DataFrame],
         List[pd.DataFrame],
         List[pd.DataFrame],
@@ -278,7 +278,7 @@ class StressPreprocessor:
         scenario_6_dfs: List[DataFrame],
         scenario_X_dfs: List[DataFrame],
         dfs: List[pd.DataFrame],
-    ) -> [
+    ) -> Tuple[
         List[pd.DataFrame],
         List[pd.DataFrame],
         List[pd.DataFrame],
@@ -417,7 +417,7 @@ class StressPreprocessor:
         scenario_X_dfs: List[DataFrame],
         dfs: List[pd.DataFrame],
         offline=True,
-    ) -> [
+    ) -> Tuple[
         List[pd.DataFrame],
         List[pd.DataFrame],
         List[pd.DataFrame],
