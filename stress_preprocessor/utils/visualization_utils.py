@@ -7,8 +7,18 @@ import numpy as np
 import pandas as pd
 
 
-def plot_timeseries_raw(df_list, value_col: str, time_col: str, scenario_col: str, mode_col: str, modes: Dict[str, str],
-                        participant_id: str, save_path: str, signal_type: str, figsize=(10, 12)):
+def plot_timeseries_raw(
+    df_list,
+    value_col: str,
+    time_col: str,
+    scenario_col: str,
+    mode_col: str,
+    modes: Dict[str, str],
+    participant_id: str,
+    save_path: str,
+    signal_type: str,
+    figsize=(10, 12),
+):
     """
     Plots a timeseries of the input dataframe with one subplot per scenario-mode combination.
 
@@ -44,11 +54,11 @@ def plot_timeseries_raw(df_list, value_col: str, time_col: str, scenario_col: st
         axs[i].set_title(f"Scenario: {scenario}, Mode: {mode}")
         axs[i].set_ylabel(value_col)
 
-    axs[-1].set_xlabel(time_col + ' (s)')
+    axs[-1].set_xlabel(time_col + " (s)")
 
     folder_name = f"SUBJ_{participant_id}_raw_signals"
-    if not os.path.exists(save_path + '/' + folder_name):
-        os.makedirs(save_path + '/' + folder_name)
+    if not os.path.exists(save_path + "/" + folder_name):
+        os.makedirs(save_path + "/" + folder_name)
 
     fig.savefig(f"{save_path}/{folder_name}/{participant_id}_{signal_type}.png")
     # plt.show()
