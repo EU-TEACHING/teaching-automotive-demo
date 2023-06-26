@@ -61,7 +61,6 @@
             "X": {"traffic_light_slow_down": [[20.0, 30.0]],
                   "pedestrian_crossing": [[59.0, 69.0]]}
         },
-  "stress_events_secs": 3,
   "target_col": "Slider_value",
   "scenario_col": "ScenarioID",
   "mode_col": "Maneuvre_ID",
