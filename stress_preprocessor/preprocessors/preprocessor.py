@@ -47,7 +47,7 @@ class StressPreprocessor:
         scenario_X_subpaths: Dict[str, str],
         subj_path: str,
         subj_id: str,
-    ) -> Tuple[List[pd.DataFrame], List[pd.DataFrame]]:
+    ) -> Tuple[List[pd.DataFrame], List[pd.DataFrame], List[pd.DataFrame], List[pd.DataFrame]]:
         """
         Offline Load data from a subject's directory into a list of pandas DataFrames.
 
@@ -631,7 +631,7 @@ class StressPreprocessor:
             scenario_6_subpath,
             scenario_X_subpaths,
             subject_path,
-            subj_id,
+            subj_id
         )
 
         (
